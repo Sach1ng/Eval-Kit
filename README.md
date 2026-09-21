@@ -6,7 +6,7 @@ Gold is the expert's worked answer. It is not the grader. The grader is a yes/no
 
 The worked example is the public [APEX-Accounting](https://huggingface.co/datasets/mercor/apex-accounting) sample from Mercor (CC BY 4.0). That company is fictional. This repo does not include anyone's real books.
 
-**Created by [@Sach1ng](https://github.com/Sach1ng)**
+**Created by [@Sach1ng](https://github.com/Sach1ng) and [@hardiktiwari](https://github.com/hardiktiwari)**
 
 ---
 
