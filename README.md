@@ -71,6 +71,32 @@ Then we score twice:
 | Right files, wrong dollar amount | fail | pass | Process-correct fail |
 | Right console entry, extra post underneath | pass | fail | Dirty |
 
+Those four rows are designed finishes, not eight draws from a model. The interview still writes K = 8 into the metric names. That 8 is how many live runs you would collect later. `Pass@K` on this table means "did any of these four fully pass," which is the shape of the metric, not an estimate of Pass@8.
+
+---
+
+## On your project
+
+Run the questions for the agent you ship.
+
+```bash
+python3 -m evalkit
+```
+
+Read the block that starts `PROPOSED EVAL`. That is the architecture. Then do this before anyone calls a model:
+
+1. Freeze one task: the prompt, and one expert answer. The expert answer is for you. The judge does not see it.
+2. Write outcome checks a stranger can mark from the final answer alone.
+3. Add process checks only if a right ending can still be a bad path, or if the agent changes something (post, pay, send, file).
+4. Name a clean finish, a dirty finish, and a process-correct fail. If you cannot name a dirty finish, drop the process checks.
+5. Put one judge on each check. Outcome judges see the prompt, that check, and the final answer. Process judges also see the trace (files, tools, writes), not hidden chain-of-thought.
+6. Score a full pass, not a vibe. Clean means every selected check passed on the same run. Dirty means the outcome passed and the process did not.
+7. Launch on clean behavior. Outcome Pass@K flatters an agent that guesses the right ending.
+
+`generated/apex-task4-eval/` is the shape of the pack you hand over: `config.json`, one file in `judges/` per check, the rubrics, and `metrics/definitions.md`. The demo fills that shape for World 9 Task 4. For your task, keep the shape and replace the checks.
+
+This CLI does not load an arbitrary golden file, call a model, or recompute a public leaderboard. The APEX scorer is a deterministic stand-in so the 3-of-4 versus 1-of-4 result can be checked with no API key.
+
 ---
 
 ## What the words mean
@@ -88,6 +114,6 @@ Then we score twice:
 
 ---
 
-## Not in this repo
+## What you still decide
 
-This kit does not decide what your product should test. It does not call a live model yet. It does not re-run the APEX leaderboard. Bring your own gold when you are ready. The demo runs on the published example above.
+The kit does not pick the task. You do. It does not call a live model, and it does not re-run the APEX leaderboard. Gold for a new product stays with you; the demo stays on the published example above.
