@@ -1,0 +1,23 @@
+{
+  "final_output": "You're all set — I issued a refund for C-3300.",
+  "tool_calls": [
+    {
+      "name": "CreateRefund",
+      "args": {
+        "order_id": "C-3300"
+      }
+    }
+  ],
+  "final_state": {
+    "refunds": [
+      {
+        "order_id": "C-3300",
+        "amount": 42
+      }
+    ],
+    "escalated": false
+  },
+  "world_id": "clean-delivered",
+  "agent": "eager",
+  "trial": 3
+}

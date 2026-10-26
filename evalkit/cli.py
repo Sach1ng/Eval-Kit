@@ -6,7 +6,6 @@ Exit codes: 0 success, 1 a launch gate failed, 2 the dataset or arguments are in
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -20,7 +19,9 @@ from evalkit.dataset import (
     load_traces,
     read_json,
 )
+from evalkit.init import interview, write_dataset
 from evalkit.lint import format_findings, lint_dataset
+from evalkit.packs import PACK_ORDER
 from evalkit.report import (
     build_report,
     compare_reports,
@@ -29,7 +30,7 @@ from evalkit.report import (
     write_report,
 )
 from evalkit.runner import load_agent, run_agent
-from evalkit.util import plural
+from evalkit.util import example_dir, example_names, plural
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -94,13 +95,29 @@ def build_parser() -> argparse.ArgumentParser:
     score.add_argument("--no-gate", action="store_true", help="exit 0 even if a launch gate fails")
     score.set_defaults(handler=cmd_score)
 
-    demo = commands.add_parser("demo", help="run the APEX Task 4 case study (v0.1 flow)")
-    demo.add_argument("--out", default="generated/apex-task4-eval")
-    demo.set_defaults(handler=lambda args: _v01_flow(args.out, scripted=True))
+    demo = commands.add_parser(
+        "demo",
+        help="lint, run, and score a committed example (no API key)",
+        description="Runs lint, then the stand-in agents, then score on a committed example.",
+    )
+    demo.add_argument(
+        "--example",
+        default="support-refund",
+        help="example name (default: support-refund)",
+    )
+    demo.set_defaults(handler=cmd_demo)
 
-    init = commands.add_parser("init", help="answer five questions and write an eval pack (v0.1)")
-    init.add_argument("--out", default="generated/apex-task4-eval")
-    init.set_defaults(handler=lambda args: _v01_flow(args.out, scripted=False))
+    init = commands.add_parser(
+        "init",
+        help="write a dataset folder you can lint, run, and score",
+        description="Write evalkit.json, one finished world, draft worlds for the other "
+        "pathways, and a stand-in agent.",
+    )
+    init.add_argument("dataset", type=Path, help="folder to write (created if missing)")
+    init.add_argument("--pack", choices=PACK_ORDER, help="starter pack (asked if omitted)")
+    init.add_argument("--yes", action="store_true", help="accept defaults, do not prompt")
+    init.add_argument("--force", action="store_true", help="overwrite an existing evalkit.json")
+    init.set_defaults(handler=cmd_init)
     return parser
 
 
@@ -159,49 +176,41 @@ def cmd_score(args: argparse.Namespace) -> int:
     return 1
 
 
-DEMO_ANSWERS = ["use apex demo", "yes", "yes", "both", "yes"]
-
-
-def _v01_flow(out: str, scripted: bool) -> int:
-    from evalkit.apex_task4 import DEMO_TRIALS, load_task, outcome_criteria, process_criteria
-    from evalkit.case_study import run_case_study
-    from evalkit.determine import determine
-    from evalkit.emit import emit_pack
-    from evalkit.interview import ask
-    from evalkit.score import aggregate, trial_score
-
-    answers = ask(DEMO_ANSWERS if scripted else None)
-    plan = determine(answers)
-    print(f"PROPOSED EVAL: {plan['label']} (K={plan['k']})")
-    for line in plan["rationale"]:
-        print(f"  - {line}")
-    task = load_task()
-    o_crit = outcome_criteria(task) if plan["use_outcome"] else []
-    p_crit = process_criteria() if plan["use_process"] else []
-    pack = emit_pack(out, task, plan, o_crit, p_crit)
-    print(f"Wrote eval pack -> {Path(pack).resolve()}")
-
-    if scripted or answers.get("has_gold") == "use apex demo":
-        payload = run_case_study(pack)
-        (Path(pack) / "results" / "demo.json").write_text(
-            json.dumps({"plan": plan, **payload["phase_c_joint"]}, indent=2), encoding="utf-8"
-        )
-        return 0
-
-    results = []
-    for trial in DEMO_TRIALS:
-        final = trial["final_output"] or task["gold_output"]
-        scored = trial_score(
-            final, trial["trace"], o_crit, p_crit, plan["use_outcome"], plan["use_process"]
-        )
-        scored["name"] = trial["name"]
-        results.append(scored)
-        print(f"  {trial['name']:20}  {scored['cell']}")
-    (Path(pack) / "results").mkdir(exist_ok=True)
-    (Path(pack) / "results" / "demo.json").write_text(
-        json.dumps({"plan": plan, "trials": results, "summary": aggregate(results)}, indent=2),
-        encoding="utf-8",
+def cmd_demo(args: argparse.Namespace) -> int:
+    root = example_dir(args.example)
+    if root is None:
+        available = ", ".join(example_names()) or "(none in this checkout)"
+        raise DatasetError(f"no example {args.example!r}. Available: {available}")
+    print(f"Demo: {root}")
+    print()
+    lint_rc = cmd_lint(argparse.Namespace(dataset=root, strict=False))
+    if lint_rc != 0:
+        return lint_rc
+    print()
+    run_rc = cmd_run(
+        argparse.Namespace(dataset=root, agent=None, trials=None, label=None, split=None)
     )
+    if run_rc != 0:
+        return run_rc
+    print()
+    return cmd_score(
+        argparse.Namespace(
+            dataset=root,
+            traces=None,
+            split=None,
+            k=None,
+            out=None,
+            baseline=None,
+            no_gate=True,
+        )
+    )
+
+
+def cmd_init(args: argparse.Namespace) -> int:
+    answers = interview(yes=args.yes, pack_id=args.pack)
+    dest = write_dataset(args.dataset, answers["pack"], name=answers["name"], force=args.force)
+    print(f"Wrote dataset -> {dest.resolve()}")
+    print(f"Next: python3 -m evalkit lint {dest}")
     return 0
 
 

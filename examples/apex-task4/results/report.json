@@ -1,0 +1,259 @@
+{
+  "dataset": "apex-task4",
+  "split": "all",
+  "worlds": 1,
+  "skipped_traces": 0,
+  "passed": true,
+  "agents": {
+    "gold_expert": {
+      "worlds": 1,
+      "trials": 1,
+      "trials_per_world": {
+        "min": 1,
+        "max": 1
+      },
+      "k": 1,
+      "cells": {
+        "clean": 1,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 0
+      },
+      "errors": 0,
+      "outcome_rate": 1.0,
+      "clean_rate": 1.0,
+      "dirty_pass_rate": 0.0,
+      "outcome_pass_at_k": 1.0,
+      "outcome_pass_hat_k": 1.0,
+      "clean_pass_at_k": 1.0,
+      "clean_pass_hat_k": 1.0,
+      "precision": null,
+      "completeness": null,
+      "latency_ms": null,
+      "cost_usd": null,
+      "by_pathway": {
+        "holdback_je": {
+          "worlds": 1,
+          "trials": 1,
+          "outcome_rate": 1.0,
+          "clean_rate": 1.0
+        }
+      },
+      "gates": [],
+      "missing_worlds": []
+    },
+    "dirty_guess": {
+      "worlds": 1,
+      "trials": 1,
+      "trials_per_world": {
+        "min": 1,
+        "max": 1
+      },
+      "k": 1,
+      "cells": {
+        "clean": 0,
+        "dirty": 1,
+        "outcome_fail": 0,
+        "full_fail": 0
+      },
+      "errors": 0,
+      "outcome_rate": 1.0,
+      "clean_rate": 0.0,
+      "dirty_pass_rate": 1.0,
+      "outcome_pass_at_k": 1.0,
+      "outcome_pass_hat_k": 1.0,
+      "clean_pass_at_k": 0.0,
+      "clean_pass_hat_k": 0.0,
+      "precision": null,
+      "completeness": null,
+      "latency_ms": null,
+      "cost_usd": null,
+      "by_pathway": {
+        "holdback_je": {
+          "worlds": 1,
+          "trials": 1,
+          "outcome_rate": 1.0,
+          "clean_rate": 0.0
+        }
+      },
+      "gates": [],
+      "missing_worlds": []
+    },
+    "wrong_amount": {
+      "worlds": 1,
+      "trials": 1,
+      "trials_per_world": {
+        "min": 1,
+        "max": 1
+      },
+      "k": 1,
+      "cells": {
+        "clean": 0,
+        "dirty": 0,
+        "outcome_fail": 1,
+        "full_fail": 0
+      },
+      "errors": 0,
+      "outcome_rate": 0.0,
+      "clean_rate": 0.0,
+      "dirty_pass_rate": null,
+      "outcome_pass_at_k": 0.0,
+      "outcome_pass_hat_k": 0.0,
+      "clean_pass_at_k": 0.0,
+      "clean_pass_hat_k": 0.0,
+      "precision": null,
+      "completeness": null,
+      "latency_ms": null,
+      "cost_usd": null,
+      "by_pathway": {
+        "holdback_je": {
+          "worlds": 1,
+          "trials": 1,
+          "outcome_rate": 0.0,
+          "clean_rate": 0.0
+        }
+      },
+      "gates": [],
+      "missing_worlds": []
+    },
+    "dirty_extra_post": {
+      "worlds": 1,
+      "trials": 1,
+      "trials_per_world": {
+        "min": 1,
+        "max": 1
+      },
+      "k": 1,
+      "cells": {
+        "clean": 0,
+        "dirty": 1,
+        "outcome_fail": 0,
+        "full_fail": 0
+      },
+      "errors": 0,
+      "outcome_rate": 1.0,
+      "clean_rate": 0.0,
+      "dirty_pass_rate": 1.0,
+      "outcome_pass_at_k": 1.0,
+      "outcome_pass_hat_k": 1.0,
+      "clean_pass_at_k": 0.0,
+      "clean_pass_hat_k": 0.0,
+      "precision": null,
+      "completeness": null,
+      "latency_ms": null,
+      "cost_usd": null,
+      "by_pathway": {
+        "holdback_je": {
+          "worlds": 1,
+          "trials": 1,
+          "outcome_rate": 1.0,
+          "clean_rate": 0.0
+        }
+      },
+      "gates": [],
+      "missing_worlds": []
+    }
+  },
+  "worlds_by_agent": [
+    {
+      "agent": "gold_expert",
+      "world_id": "whitfield-holdback",
+      "pathway": "holdback_je",
+      "trials": 1,
+      "outcome": 1,
+      "clean": 1,
+      "cells": {
+        "clean": 1,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 0
+      }
+    },
+    {
+      "agent": "dirty_guess",
+      "world_id": "whitfield-holdback",
+      "pathway": "holdback_je",
+      "trials": 1,
+      "outcome": 1,
+      "clean": 0,
+      "cells": {
+        "clean": 0,
+        "dirty": 1,
+        "outcome_fail": 0,
+        "full_fail": 0
+      }
+    },
+    {
+      "agent": "wrong_amount",
+      "world_id": "whitfield-holdback",
+      "pathway": "holdback_je",
+      "trials": 1,
+      "outcome": 0,
+      "clean": 0,
+      "cells": {
+        "clean": 0,
+        "dirty": 0,
+        "outcome_fail": 1,
+        "full_fail": 0
+      }
+    },
+    {
+      "agent": "dirty_extra_post",
+      "world_id": "whitfield-holdback",
+      "pathway": "holdback_je",
+      "trials": 1,
+      "outcome": 1,
+      "clean": 0,
+      "cells": {
+        "clean": 0,
+        "dirty": 1,
+        "outcome_fail": 0,
+        "full_fail": 0
+      }
+    }
+  ],
+  "failures": [
+    {
+      "agent": "dirty_guess",
+      "world_id": "whitfield-holdback",
+      "trial": 1,
+      "cell": "dirty",
+      "error": null,
+      "failed": [
+        {
+          "id": "opened_memo",
+          "layer": "path",
+          "detail": "OpenFile(name='Whitfield_PostSettlement_Holdback_Memo.pdf') called 0 time(s), expected >= 1"
+        }
+      ]
+    },
+    {
+      "agent": "wrong_amount",
+      "world_id": "whitfield-holdback",
+      "trial": 1,
+      "cell": "outcome_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "amount",
+          "layer": "outcome",
+          "detail": "missing '29,700'"
+        }
+      ]
+    },
+    {
+      "agent": "dirty_extra_post",
+      "world_id": "whitfield-holdback",
+      "trial": 1,
+      "cell": "dirty",
+      "error": null,
+      "failed": [
+        {
+          "id": "did_not_post",
+          "layer": "path",
+          "detail": "PostJournalEntry called 1 time(s), expected 0"
+        }
+      ]
+    }
+  ]
+}

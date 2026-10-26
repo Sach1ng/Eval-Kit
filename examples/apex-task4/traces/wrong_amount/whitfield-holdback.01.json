@@ -1,0 +1,23 @@
+{
+  "final_output": "Proposed JE\n4200 Contingency Fee Revenue $30,000\n2050 Accrued Expenses $30,000",
+  "tool_calls": [
+    {
+      "name": "OpenFile",
+      "args": {
+        "name": "Whitfield_PostSettlement_Holdback_Memo.pdf"
+      }
+    },
+    {
+      "name": "OpenFile",
+      "args": {
+        "name": "qbo_journal_entry_register_2024.xlsx"
+      }
+    }
+  ],
+  "final_state": {
+    "posted": []
+  },
+  "world_id": "whitfield-holdback",
+  "agent": "wrong_amount",
+  "trial": 1
+}

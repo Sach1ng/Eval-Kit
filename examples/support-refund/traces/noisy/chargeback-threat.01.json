@@ -1,0 +1,23 @@
+{
+  "final_output": "You're all set — I issued a refund for B-2207.",
+  "tool_calls": [
+    {
+      "name": "CreateRefund",
+      "args": {
+        "order_id": "B-2207"
+      }
+    }
+  ],
+  "final_state": {
+    "refunds": [
+      {
+        "order_id": "B-2207",
+        "amount": 42
+      }
+    ],
+    "escalated": false
+  },
+  "world_id": "chargeback-threat",
+  "agent": "noisy",
+  "trial": 1
+}

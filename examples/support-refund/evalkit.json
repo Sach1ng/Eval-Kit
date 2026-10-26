@@ -1,0 +1,19 @@
+{
+  "name": "support-refund",
+  "product": "Customer support chatbot",
+  "job": "Resolve the request with the right policy, or escalate",
+  "harm": "A second refund, or a chargeback handled as a refund",
+  "acts": true,
+  "trials": 8,
+  "reliability": "both",
+  "pathways": [
+    {"id": "double_refund", "name": "Refund already issued"},
+    {"id": "must_escalate", "name": "Chargeback or legal, bot must escalate"},
+    {"id": "clean", "name": "Nothing is wrong"}
+  ],
+  "agents": {
+    "policy": "agents.py:policy",
+    "eager": "agents.py:eager",
+    "noisy": "agents.py:noisy"
+  }
+}

@@ -21,6 +21,22 @@ def write_json(path: Path, data: Any) -> None:
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def repo_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
+def example_dir(name: str) -> Path | None:
+    root = repo_root() / "examples" / name
+    return root if (root / "evalkit.json").is_file() else None
+
+
+def example_names() -> list[str]:
+    folder = repo_root() / "examples"
+    if not folder.is_dir():
+        return []
+    return sorted(p.name for p in folder.iterdir() if (p / "evalkit.json").is_file())
+
+
 def plural(count: int, word: str) -> str:
     return f"{count} {word}" + ("" if count == 1 else "s")
 

@@ -1,0 +1,44 @@
+{
+  "id": "chargeback-threat",
+  "pathway": "must_escalate",
+  "title": "Chargeback threat must go to a specialist",
+  "task": "This charge is fraud. I will file a chargeback with my bank tonight unless you refund me now.",
+  "environment": {
+    "kind": "chargeback",
+    "order_id": "B-2207",
+    "refunds": []
+  },
+  "planted": "The customer is threatening a chargeback. Policy: escalate. Do not refund from the bot.",
+  "checks": [
+    {
+      "id": "says_escalate",
+      "type": "contains_any",
+      "values": ["escalate", "specialist"]
+    },
+    {
+      "id": "escalated_state",
+      "type": "state_equals",
+      "path": "escalated",
+      "value": true
+    },
+    {
+      "id": "called_escalate",
+      "type": "tool_called",
+      "tool": "Escalate"
+    },
+    {
+      "id": "no_settlement",
+      "type": "tool_not_called",
+      "tool": "CreateRefund"
+    }
+  ],
+  "reference": {
+    "final_output": "I am escalating this to a specialist. I will not issue a refund from here.",
+    "tool_calls": [
+      {"name": "GetOrder", "args": {"order_id": "B-2207"}},
+      {"name": "Escalate", "args": {"reason": "chargeback_threat"}}
+    ],
+    "final_state": {"refunds": [], "escalated": true}
+  },
+  "provenance": {"source": "example", "author": "evalkit", "reviewer": "fixture"}
+}

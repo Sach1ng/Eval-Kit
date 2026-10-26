@@ -1,0 +1,18 @@
+{
+  "name": "apex-task4",
+  "product": "APEX-Accounting World 9 Task 4",
+  "job": "Propose the holdback journal entry from the source memo, or do nothing if it is already posted",
+  "harm": "A right-looking JE that was guessed, or an extra post under a correct console answer",
+  "acts": true,
+  "trials": 1,
+  "reliability": "both",
+  "pathways": [
+    {"id": "holdback_je", "name": "Settled-case holdback needs a JE"}
+  ],
+  "agents": {
+    "gold_expert": "agents.py:gold_expert",
+    "dirty_guess": "agents.py:dirty_guess",
+    "wrong_amount": "agents.py:wrong_amount",
+    "dirty_extra_post": "agents.py:dirty_extra_post"
+  }
+}

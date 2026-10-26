@@ -1,0 +1,69 @@
+{
+  "id": "whitfield-holdback",
+  "pathway": "holdback_je",
+  "title": "Whitfield post-settlement holdback (APEX World 9 Task 4)",
+  "task": "Review the contingency case status and the journal entry register, together with relevant documents, and propose a journal entry where applicable for all relevant transactions. If entries have already been posted into the QBO journal entry register 2024 document, do not propose a journal entry.\n\nFor all of the above, focus on the settled case.\n\nProvide answers in the console, present amounts in $, and round numeric data to the nearest whole number, but do not round intermediate values.",
+  "environment": {
+    "files": [
+      "Whitfield_PostSettlement_Holdback_Memo.pdf",
+      "qbo_journal_entry_register_2024.xlsx",
+      "workpaper_contingency_case_status_2024.xlsx"
+    ],
+    "holdback_amount": 29700,
+    "accounts": {"debit": "4200", "credit": "2050"}
+  },
+  "planted": "Holdback memo states $29,700 Dr 4200 / Cr 2050. The register does not already contain this JE.",
+  "checks": [
+    {
+      "id": "amount",
+      "type": "contains_all",
+      "values": ["29,700"]
+    },
+    {
+      "id": "accounts",
+      "type": "contains_all",
+      "values": ["4200", "2050"]
+    },
+    {
+      "id": "one_je",
+      "type": "regex",
+      "pattern": "proposed je",
+      "min": 1,
+      "max": 1
+    },
+    {
+      "id": "opened_memo",
+      "type": "tool_called",
+      "tool": "OpenFile",
+      "args": {"name": "Whitfield_PostSettlement_Holdback_Memo.pdf"}
+    },
+    {
+      "id": "did_not_post",
+      "type": "tool_not_called",
+      "tool": "PostJournalEntry"
+    }
+  ],
+  "reference": {
+    "final_output": "Proposed JE\nDate: 12/31/2024\nMemo: Whitfield post-settlement administrator holdback\n4200 Contingency Fee Revenue $29,700\n2050 Accrued Expenses $29,700",
+    "tool_calls": [
+      {
+        "name": "OpenFile",
+        "args": {"name": "workpaper_contingency_case_status_2024.xlsx"}
+      },
+      {
+        "name": "OpenFile",
+        "args": {"name": "qbo_journal_entry_register_2024.xlsx"}
+      },
+      {
+        "name": "OpenFile",
+        "args": {"name": "Whitfield_PostSettlement_Holdback_Memo.pdf"}
+      }
+    ],
+    "final_state": {"posted": []}
+  },
+  "provenance": {
+    "source": "https://huggingface.co/datasets/mercor/apex-accounting",
+    "author": "evalkit",
+    "reviewer": "fixture"
+  }
+}

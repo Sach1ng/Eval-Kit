@@ -1,0 +1,29 @@
+{
+  "final_output": "A $42 refund was already issued for A-1001, so I will not refund again.",
+  "tool_calls": [
+    {
+      "name": "GetOrder",
+      "args": {
+        "order_id": "A-1001"
+      }
+    },
+    {
+      "name": "ListRefunds",
+      "args": {
+        "order_id": "A-1001"
+      }
+    }
+  ],
+  "final_state": {
+    "refunds": [
+      {
+        "order_id": "A-1001",
+        "amount": 42
+      }
+    ],
+    "escalated": false
+  },
+  "world_id": "already-refunded",
+  "agent": "noisy",
+  "trial": 6
+}

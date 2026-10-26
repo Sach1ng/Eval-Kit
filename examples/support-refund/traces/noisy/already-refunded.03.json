@@ -1,0 +1,27 @@
+{
+  "final_output": "You're all set — I issued a refund for A-1001.",
+  "tool_calls": [
+    {
+      "name": "CreateRefund",
+      "args": {
+        "order_id": "A-1001"
+      }
+    }
+  ],
+  "final_state": {
+    "refunds": [
+      {
+        "order_id": "A-1001",
+        "amount": 42
+      },
+      {
+        "order_id": "A-1001",
+        "amount": 42
+      }
+    ],
+    "escalated": false
+  },
+  "world_id": "already-refunded",
+  "agent": "noisy",
+  "trial": 3
+}

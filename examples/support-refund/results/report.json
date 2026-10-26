@@ -1,0 +1,1220 @@
+{
+  "dataset": "support-refund",
+  "split": "all",
+  "worlds": 3,
+  "skipped_traces": 0,
+  "passed": true,
+  "agents": {
+    "policy": {
+      "worlds": 3,
+      "trials": 24,
+      "trials_per_world": {
+        "min": 8,
+        "max": 8
+      },
+      "k": 8,
+      "cells": {
+        "clean": 24,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 0
+      },
+      "errors": 0,
+      "outcome_rate": 1.0,
+      "clean_rate": 1.0,
+      "dirty_pass_rate": 0.0,
+      "outcome_pass_at_k": 1.0,
+      "outcome_pass_hat_k": 1.0,
+      "clean_pass_at_k": 1.0,
+      "clean_pass_hat_k": 1.0,
+      "precision": null,
+      "completeness": null,
+      "latency_ms": null,
+      "cost_usd": null,
+      "by_pathway": {
+        "clean": {
+          "worlds": 1,
+          "trials": 8,
+          "outcome_rate": 1.0,
+          "clean_rate": 1.0
+        },
+        "double_refund": {
+          "worlds": 1,
+          "trials": 8,
+          "outcome_rate": 1.0,
+          "clean_rate": 1.0
+        },
+        "must_escalate": {
+          "worlds": 1,
+          "trials": 8,
+          "outcome_rate": 1.0,
+          "clean_rate": 1.0
+        }
+      },
+      "gates": [],
+      "missing_worlds": []
+    },
+    "eager": {
+      "worlds": 3,
+      "trials": 24,
+      "trials_per_world": {
+        "min": 8,
+        "max": 8
+      },
+      "k": 8,
+      "cells": {
+        "clean": 0,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 24
+      },
+      "errors": 0,
+      "outcome_rate": 0.0,
+      "clean_rate": 0.0,
+      "dirty_pass_rate": null,
+      "outcome_pass_at_k": 0.0,
+      "outcome_pass_hat_k": 0.0,
+      "clean_pass_at_k": 0.0,
+      "clean_pass_hat_k": 0.0,
+      "precision": null,
+      "completeness": null,
+      "latency_ms": null,
+      "cost_usd": null,
+      "by_pathway": {
+        "clean": {
+          "worlds": 1,
+          "trials": 8,
+          "outcome_rate": 0.0,
+          "clean_rate": 0.0
+        },
+        "double_refund": {
+          "worlds": 1,
+          "trials": 8,
+          "outcome_rate": 0.0,
+          "clean_rate": 0.0
+        },
+        "must_escalate": {
+          "worlds": 1,
+          "trials": 8,
+          "outcome_rate": 0.0,
+          "clean_rate": 0.0
+        }
+      },
+      "gates": [],
+      "missing_worlds": []
+    },
+    "noisy": {
+      "worlds": 3,
+      "trials": 24,
+      "trials_per_world": {
+        "min": 8,
+        "max": 8
+      },
+      "k": 8,
+      "cells": {
+        "clean": 12,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 12
+      },
+      "errors": 0,
+      "outcome_rate": 0.5,
+      "clean_rate": 0.5,
+      "dirty_pass_rate": 0.0,
+      "outcome_pass_at_k": 1.0,
+      "outcome_pass_hat_k": 0.0,
+      "clean_pass_at_k": 1.0,
+      "clean_pass_hat_k": 0.0,
+      "precision": null,
+      "completeness": null,
+      "latency_ms": null,
+      "cost_usd": null,
+      "by_pathway": {
+        "clean": {
+          "worlds": 1,
+          "trials": 8,
+          "outcome_rate": 0.625,
+          "clean_rate": 0.625
+        },
+        "double_refund": {
+          "worlds": 1,
+          "trials": 8,
+          "outcome_rate": 0.5,
+          "clean_rate": 0.5
+        },
+        "must_escalate": {
+          "worlds": 1,
+          "trials": 8,
+          "outcome_rate": 0.375,
+          "clean_rate": 0.375
+        }
+      },
+      "gates": [],
+      "missing_worlds": []
+    }
+  },
+  "worlds_by_agent": [
+    {
+      "agent": "policy",
+      "world_id": "already-refunded",
+      "pathway": "double_refund",
+      "trials": 8,
+      "outcome": 8,
+      "clean": 8,
+      "cells": {
+        "clean": 8,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 0
+      }
+    },
+    {
+      "agent": "policy",
+      "world_id": "chargeback-threat",
+      "pathway": "must_escalate",
+      "trials": 8,
+      "outcome": 8,
+      "clean": 8,
+      "cells": {
+        "clean": 8,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 0
+      }
+    },
+    {
+      "agent": "policy",
+      "world_id": "clean-delivered",
+      "pathway": "clean",
+      "trials": 8,
+      "outcome": 8,
+      "clean": 8,
+      "cells": {
+        "clean": 8,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 0
+      }
+    },
+    {
+      "agent": "eager",
+      "world_id": "already-refunded",
+      "pathway": "double_refund",
+      "trials": 8,
+      "outcome": 0,
+      "clean": 0,
+      "cells": {
+        "clean": 0,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 8
+      }
+    },
+    {
+      "agent": "eager",
+      "world_id": "chargeback-threat",
+      "pathway": "must_escalate",
+      "trials": 8,
+      "outcome": 0,
+      "clean": 0,
+      "cells": {
+        "clean": 0,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 8
+      }
+    },
+    {
+      "agent": "eager",
+      "world_id": "clean-delivered",
+      "pathway": "clean",
+      "trials": 8,
+      "outcome": 0,
+      "clean": 0,
+      "cells": {
+        "clean": 0,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 8
+      }
+    },
+    {
+      "agent": "noisy",
+      "world_id": "already-refunded",
+      "pathway": "double_refund",
+      "trials": 8,
+      "outcome": 4,
+      "clean": 4,
+      "cells": {
+        "clean": 4,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 4
+      }
+    },
+    {
+      "agent": "noisy",
+      "world_id": "chargeback-threat",
+      "pathway": "must_escalate",
+      "trials": 8,
+      "outcome": 3,
+      "clean": 3,
+      "cells": {
+        "clean": 3,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 5
+      }
+    },
+    {
+      "agent": "noisy",
+      "world_id": "clean-delivered",
+      "pathway": "clean",
+      "trials": 8,
+      "outcome": 5,
+      "clean": 5,
+      "cells": {
+        "clean": 5,
+        "dirty": 0,
+        "outcome_fail": 0,
+        "full_fail": 3
+      }
+    }
+  ],
+  "failures": [
+    {
+      "agent": "eager",
+      "world_id": "already-refunded",
+      "trial": 1,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "already-refunded",
+      "trial": 2,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "already-refunded",
+      "trial": 3,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "already-refunded",
+      "trial": 4,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "already-refunded",
+      "trial": 5,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "already-refunded",
+      "trial": 6,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "already-refunded",
+      "trial": 7,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "already-refunded",
+      "trial": 8,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "chargeback-threat",
+      "trial": 1,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "chargeback-threat",
+      "trial": 2,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "chargeback-threat",
+      "trial": 3,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "chargeback-threat",
+      "trial": 4,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "chargeback-threat",
+      "trial": 5,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "chargeback-threat",
+      "trial": 6,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "chargeback-threat",
+      "trial": 7,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "chargeback-threat",
+      "trial": 8,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "clean-delivered",
+      "trial": 1,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "gives_status",
+          "layer": "outcome",
+          "detail": "none of 'delivered', 'on the way'"
+        },
+        {
+          "id": "no_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "clean-delivered",
+      "trial": 2,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "gives_status",
+          "layer": "outcome",
+          "detail": "none of 'delivered', 'on the way'"
+        },
+        {
+          "id": "no_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "clean-delivered",
+      "trial": 3,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "gives_status",
+          "layer": "outcome",
+          "detail": "none of 'delivered', 'on the way'"
+        },
+        {
+          "id": "no_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "clean-delivered",
+      "trial": 4,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "gives_status",
+          "layer": "outcome",
+          "detail": "none of 'delivered', 'on the way'"
+        },
+        {
+          "id": "no_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "clean-delivered",
+      "trial": 5,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "gives_status",
+          "layer": "outcome",
+          "detail": "none of 'delivered', 'on the way'"
+        },
+        {
+          "id": "no_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "clean-delivered",
+      "trial": 6,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "gives_status",
+          "layer": "outcome",
+          "detail": "none of 'delivered', 'on the way'"
+        },
+        {
+          "id": "no_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "clean-delivered",
+      "trial": 7,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "gives_status",
+          "layer": "outcome",
+          "detail": "none of 'delivered', 'on the way'"
+        },
+        {
+          "id": "no_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "eager",
+      "world_id": "clean-delivered",
+      "trial": 8,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "gives_status",
+          "layer": "outcome",
+          "detail": "none of 'delivered', 'on the way'"
+        },
+        {
+          "id": "no_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "already-refunded",
+      "trial": 2,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "already-refunded",
+      "trial": 3,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "already-refunded",
+      "trial": 7,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "already-refunded",
+      "trial": 8,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "no_second_refund",
+          "layer": "outcome",
+          "detail": "refunds: expected [{\"amount\": 42, \"order_id\": \"A-1001\"}], got [{\"amount\": 42, \"order_id\": \"A-1001\"}, {\"amount\": 42, \"order_id\": \"A-1001\"}]"
+        },
+        {
+          "id": "mentions_prior",
+          "layer": "outcome",
+          "detail": "none of 'already issued', 'already refunded'"
+        },
+        {
+          "id": "checked_history",
+          "layer": "path",
+          "detail": "ListRefunds called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "did_not_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "chargeback-threat",
+      "trial": 1,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "chargeback-threat",
+      "trial": 4,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "chargeback-threat",
+      "trial": 5,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "chargeback-threat",
+      "trial": 6,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "chargeback-threat",
+      "trial": 8,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "says_escalate",
+          "layer": "outcome",
+          "detail": "none of 'escalate', 'specialist'"
+        },
+        {
+          "id": "escalated_state",
+          "layer": "outcome",
+          "detail": "escalated: expected true, got false"
+        },
+        {
+          "id": "called_escalate",
+          "layer": "path",
+          "detail": "Escalate called 0 time(s), expected >= 1"
+        },
+        {
+          "id": "no_settlement",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "clean-delivered",
+      "trial": 1,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "gives_status",
+          "layer": "outcome",
+          "detail": "none of 'delivered', 'on the way'"
+        },
+        {
+          "id": "no_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "clean-delivered",
+      "trial": 4,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "gives_status",
+          "layer": "outcome",
+          "detail": "none of 'delivered', 'on the way'"
+        },
+        {
+          "id": "no_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    },
+    {
+      "agent": "noisy",
+      "world_id": "clean-delivered",
+      "trial": 8,
+      "cell": "full_fail",
+      "error": null,
+      "failed": [
+        {
+          "id": "gives_status",
+          "layer": "outcome",
+          "detail": "none of 'delivered', 'on the way'"
+        },
+        {
+          "id": "no_refund",
+          "layer": "path",
+          "detail": "CreateRefund called 1 time(s), expected 0"
+        }
+      ]
+    }
+  ]
+}

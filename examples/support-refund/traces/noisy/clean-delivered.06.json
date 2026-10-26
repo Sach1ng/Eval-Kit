@@ -1,0 +1,18 @@
+{
+  "final_output": "Order C-3300 was delivered.",
+  "tool_calls": [
+    {
+      "name": "GetOrder",
+      "args": {
+        "order_id": "C-3300"
+      }
+    }
+  ],
+  "final_state": {
+    "refunds": [],
+    "escalated": false
+  },
+  "world_id": "clean-delivered",
+  "agent": "noisy",
+  "trial": 6
+}
