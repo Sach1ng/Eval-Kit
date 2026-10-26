@@ -20,6 +20,7 @@ from evalkit.dataset import (
     load_traces,
     read_json,
 )
+from evalkit.lint import format_findings, lint_dataset
 from evalkit.report import (
     build_report,
     compare_reports,
@@ -50,6 +51,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"evalkit {__version__}")
     commands = parser.add_subparsers(title="commands", metavar="<command>")
 
+    lint = commands.add_parser(
+        "lint",
+        help="check a dataset against eval practice before trusting its scores",
+        description="Check every world and the set as a whole. Exits 1 if there are errors.",
+    )
+    lint.add_argument("dataset", type=Path, help="dataset folder (contains evalkit.json)")
+    lint.add_argument("--strict", action="store_true", help="exit 1 on warnings too")
+    lint.set_defaults(handler=cmd_lint)
+
     score = commands.add_parser(
         "score",
         help="grade traces against worlds, check launch gates, write a report",
@@ -72,6 +82,14 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("--out", default="generated/apex-task4-eval")
     init.set_defaults(handler=lambda args: _v01_flow(args.out, scripted=False))
     return parser
+
+
+def cmd_lint(args: argparse.Namespace) -> int:
+    dataset = load_dataset(args.dataset)
+    findings = lint_dataset(dataset)
+    print(format_findings(dataset, findings))
+    failing = ("error", "warning") if args.strict else ("error",)
+    return 1 if any(f.severity in failing for f in findings) else 0
 
 
 def cmd_score(args: argparse.Namespace) -> int:
