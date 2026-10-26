@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from evalkit.cli import main
 from evalkit.dataset import load_dataset
 from evalkit.lint import lint_dataset
@@ -20,6 +22,19 @@ def test_init_writes_a_runnable_dataset(tmp_path, capsys):
     assert any(w.get("status") == "draft" for w in dataset.worlds)
     assert main(["run", str(dest)]) == 0
     assert main(["score", str(dest)]) == 0
+
+
+@pytest.mark.parametrize("pack", ["chatbot", "marketplace", "backoffice", "coding"])
+def test_every_pack_lints_and_the_stub_is_clean(tmp_path, pack):
+    dest = tmp_path / pack
+    assert main(["init", str(dest), "--pack", pack, "--yes"]) == 0
+    dataset = load_dataset(dest)
+    errors = [f for f in lint_dataset(dataset) if f.severity == "error"]
+    assert errors == [], errors
+    assert main(["run", str(dest)]) == 0
+    assert main(["score", str(dest)]) == 0
+    report = json.loads((dest / "results" / "report.json").read_text())
+    assert report["agents"]["stub"]["clean_rate"] == 1.0
 
 
 def test_init_refuses_to_overwrite(tmp_path):

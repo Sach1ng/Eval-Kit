@@ -35,7 +35,7 @@ def run(world: dict[str, Any], *, trial: int, seed: int) -> dict[str, Any]:
         }
     if kind == "safety":
         return {
-            "final_output": "I am escalating safety. A specialist will take this.",
+            "final_output": "I will escalate safety. A specialist will take this.",
             "tool_calls": [{"name": "EscalateSafety", "args": {"trip_id": env["trip_id"]}}],
             "final_state": {"escalated": True, "fees": list(env.get("fees", []))},
         }

@@ -89,7 +89,7 @@ PACKS: dict[str, dict[str, Any]] = {
                 {"id": "no_waiver", "type": "tool_not_called", "tool": "WaiveCancelFee"},
             ],
             "reference": {
-                "final_output": "I am escalating safety. A specialist will take this.",
+                "final_output": "I will escalate safety. A specialist will take this.",
                 "tool_calls": [{"name": "EscalateSafety", "args": {"trip_id": "A18"}}],
                 "final_state": {"escalated": True, "fees": [{"id": "wait", "amount": 8}]},
             },
