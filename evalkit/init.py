@@ -9,6 +9,7 @@ from evalkit.dataset import CONFIG_FILE, DatasetError, load_dataset
 from evalkit.inbox import list_inbox, read_clues
 from evalkit.packs import PACK_ORDER, PACKS
 from evalkit.process import write_process
+from evalkit.propose import apply_confirmed_gates, propose, render_plan, write_plan
 from evalkit.util import slugify, write_json
 
 AGENT_STUB = '''\
@@ -71,10 +72,12 @@ A launch-quality eval is weeks to months. Read PROCESS.md.
 
 ```bash
 python3 -m evalkit ingest {dest} --from ./inbox
+python3 -m evalkit metrics {dest}
 python3 -m evalkit lint {dest}
 python3 -m evalkit status {dest}
-python3 -m evalkit run {dest}
-python3 -m evalkit score {dest}
+python3 -m evalkit preprod {dest}
+python3 -m evalkit ship {dest}
+python3 -m evalkit prod {dest} --from ./prod-traces
 ```
 
 `agents.py:run` is a stand-in for the sample world. Point `evalkit.json`
@@ -113,22 +116,23 @@ def write_dataset(
         metric = "clean_pass_hat_k" if reliability != "at_least_once" else "clean_pass_at_k"
         gates.append({"metric": metric, "min": float(gate)})
 
-    write_json(
-        dest / CONFIG_FILE,
-        {
-            "name": label,
-            "product": pack["label"],
-            "job": answers.get("job") or pack["job"],
-            "harm": answers.get("harm") or pack["harm"],
-            "gold_unit": answers.get("gold_unit") or _gold_unit(pack_id),
-            "acts": acts,
-            "trials": trials,
-            "reliability": reliability,
-            "pathways": pathways,
-            "gates": gates,
-            "agents": {"stub": "agents.py:run"},
-        },
-    )
+    config = {
+        "name": label,
+        "product": pack["label"],
+        "job": answers.get("job") or pack["job"],
+        "harm": answers.get("harm") or pack["harm"],
+        "gold_unit": answers.get("gold_unit") or _gold_unit(pack_id),
+        "acts": acts,
+        "trials": trials,
+        "reliability": reliability,
+        "pathways": pathways,
+        "gates": gates,
+        "agents": {"stub": "agents.py:run"},
+    }
+    goal = str(answers.get("company_goal") or "").strip()
+    if goal.lower() not in {"", "skip", "none"}:
+        config["company_goal"] = goal
+    write_json(dest / CONFIG_FILE, config)
     write_json(dest / "worlds" / f"{ready['id']}.json", ready)
     for pathway in pathways:
         if pathway["id"] == ready["pathway"]:
@@ -147,6 +151,25 @@ def write_dataset(
     (dest / "agents.py").write_text(AGENT_STUB, encoding="utf-8")
     (dest / "RUN.md").write_text(RUN_MD.format(dest=dest), encoding="utf-8")
     (dest / "product.md").write_text(_product_md(pack, answers, dest), encoding="utf-8")
+    plan = answers.get("plan")
+    if not isinstance(plan, dict):
+        plan = propose(
+            job=str(config["job"]),
+            harm=str(config["harm"]),
+            acts=acts,
+            gold_unit=str(config["gold_unit"]),
+            reliability=reliability,
+            trials=trials,
+            gate=float(gate) if isinstance(gate, (int, float)) else None,
+            company_goal=goal,
+        )
+    else:
+        plan = dict(plan)
+    if answers.get("metrics_confirmed"):
+        plan["confirmed"] = True
+    write_plan(dest, plan)
+    if plan.get("confirmed"):
+        apply_confirmed_gates(dest, plan)
     write_process(load_dataset(dest))
     return dest
 
@@ -263,8 +286,41 @@ def interview(
             print("  (ignoring launch bar; it must be between 0 and 1)")
             gate = None
 
+    company_goal = _ask(
+        "Company number in the PRD we should not mix into this eval (conversion, CSAT), or skip?",
+        default="skip",
+        queued=queued,
+        yes=yes,
+    )
+
     name = _ask("Dataset name?", default=slugify(pack["label"]), queued=queued, yes=yes)
     trials = 8 if reliability != "at_least_once" else 4
+    prd_text = "\n".join(
+        Path(c["path"]).read_text(encoding="utf-8", errors="replace")
+        if Path(c["path"]).is_file()
+        else ""
+        for c in clues
+    )
+    plan = propose(
+        job=job,
+        harm=harm,
+        acts=writes == "yes",
+        gold_unit=gold_unit,
+        reliability=reliability,
+        trials=trials,
+        gate=gate,
+        prd_text=prd_text,
+        company_goal=company_goal,
+    )
+    print()
+    print(render_plan(plan), end="")
+    confirm = _ask(
+        "Use this plan for pre-prod gates?",
+        options=["later", "confirm"],
+        default="later",
+        queued=queued,
+        yes=yes,
+    )
     answers = {
         "pack": chosen,
         "name": name,
@@ -278,16 +334,10 @@ def interview(
         "trials": trials,
         "clues": clues,
         "source": source,
+        "company_goal": company_goal,
+        "metrics_confirmed": confirm == "confirm",
+        "plan": plan,
     }
-    print()
-    print("Proposed metrics")
-    print(f"  Outcome checks on the {gold_unit}.")
-    if answers["acts"]:
-        print("  Path checks: a right-looking result on a forbidden action is dirty.")
-    print(f"  Reliability: {need} (k={trials}).")
-    if gate is not None:
-        print(f"  Launch gate: clean pass^{trials} >= {gate}.")
-    print("  This is a starter. PROCESS.md lists what is still on you.")
     print()
     return answers
 
@@ -322,9 +372,9 @@ def _product_md(pack: dict[str, Any], answers: dict[str, Any], dest: Path) -> st
         "Next:",
         "",
         "```bash",
-        f"python3 -m evalkit lint {dest}",
-        f"python3 -m evalkit run {dest}",
-        f"python3 -m evalkit score {dest}",
+        f"python3 -m evalkit metrics {dest}",
+        f"python3 -m evalkit preprod {dest}",
+        f"python3 -m evalkit ship {dest}",
         "```",
         "",
     ]

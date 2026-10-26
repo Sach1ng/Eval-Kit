@@ -1,8 +1,9 @@
 """The eval is not done when init returns.
 
 A launch-quality golden set is weeks to months: talk to the people who see the
-failures, rebuild the environment, write checks, and have someone else verify.
-This module writes that remaining work into PROCESS.md and `evalkit status`.
+failures, rebuild the environment, write checks, confirm metrics, and have
+someone else verify. This module writes that remaining work into PROCESS.md
+and `evalkit status`.
 """
 
 from __future__ import annotations
@@ -10,17 +11,19 @@ from __future__ import annotations
 from pathlib import Path
 
 from evalkit.dataset import Dataset
+from evalkit.propose import load_plan
 from evalkit.util import plural
 
 STAGES = (
-    ("Frame", "You + experts or customers", "`evalkit init` interview"),
-    ("Collect real misses", "Tickets, chats, traces you already have", "`evalkit ingest`"),
+    ("Frame the job", "You + experts, customers, PRD", "`evalkit init`"),
+    ("Collect real misses", "Transcripts, tickets, issues you already have", "`evalkit ingest`"),
     ("Plant and write checks", "You", "edit worlds/*.json"),
     ("Prove the world is solvable", "You", "reference run; `evalkit lint`"),
-    ("Second pair of eyes", "Someone who did not plant the world", "provenance.reviewer"),
-    ("Holdout", "You", 'mark about a fifth `"split": "holdout"`'),
-    ("Run the agent", "Your adapter", "`evalkit run` / `evalkit score`"),
-    ("Grow", "New production misses", "`evalkit ingest` again"),
+    ("Propose metrics", "Job, harm, PRD — then you confirm", "`evalkit metrics`"),
+    ("Pre-prod against gold", "Your adapter + code checks", "`evalkit preprod`"),
+    ("Ship bar", "Confirmed gates, prefer holdout", "`evalkit ship`"),
+    ("Post-prod", "Unlabeled live traces", "`evalkit prod`"),
+    ("Grow gold", "Confirmed live misses", "`evalkit ingest` / `prod --ingest`"),
 )
 
 
@@ -54,6 +57,13 @@ def remaining(dataset: Dataset) -> list[str]:
         )
     if ready and not any(w.get("split") == "holdout" for w in ready) and len(ready) >= 10:
         todo.append("No holdout split yet. Do not tune on every world.")
+    plan = load_plan(dataset.root)
+    if plan is None or not plan.get("confirmed"):
+        todo.append(
+            "Metric plan is still a proposal. Confirm it with `evalkit metrics` before ship."
+        )
+    elif not dataset.gates:
+        todo.append("Metrics confirmed but no launch bar. Set a gate, then `evalkit ship`.")
     if not dataset.agents:
         todo.append("No agent adapter in evalkit.json. Point agents at your system.")
     return todo
@@ -62,16 +72,24 @@ def remaining(dataset: Dataset) -> list[str]:
 def render_process(dataset: Dataset) -> str:
     ready = len(dataset.ready_worlds())
     drafts = sum(1 for w in dataset.worlds if w.get("status") == "draft")
+    plan = load_plan(dataset.root)
+    if plan is None:
+        metrics_state = "none yet"
+    elif plan.get("confirmed"):
+        metrics_state = "confirmed"
+    else:
+        metrics_state = "proposal"
     lines = [
         f"# {dataset.name} is not done",
         "",
-        "A launch-quality eval is weeks to months of interviews, environment setup, and",
-        "verification. This folder is the start of that loop. The kit helps you create",
-        "worlds from interviews and from transcripts or tickets that already happened.",
-        "It does not finish the set for you.",
+        "Gold, then metrics you confirm, then pre-prod against that gold, then a ship",
+        "check, then post-prod on unlabeled live traces. The kit helps create the worlds",
+        "and the plan. It does not finish the months of interviews, environment work,",
+        "or verification for you.",
         "",
         f"Ready worlds (scored): {ready}",
         f"Drafts (not gold yet): {drafts}",
+        f"Metrics: {metrics_state}",
         "",
         "| Stage | Who | This kit |",
         "|-------|-----|----------|",
@@ -83,17 +101,20 @@ def render_process(dataset: Dataset) -> str:
     if todo:
         lines.extend(f"- {item}" for item in todo)
     else:
-        lines.append("- Lint is clean and a reviewer is recorded. Keep adding real misses.")
+        lines.append("- Lint is clean, metrics are confirmed, a reviewer is recorded.")
+        lines.append("  Keep adding real misses from prod.")
     lines += [
         "",
         "## Commands",
         "",
         "```bash",
         f"python3 -m evalkit ingest {dataset.root} --from ./inbox",
+        f"python3 -m evalkit metrics {dataset.root}",
         f"python3 -m evalkit lint {dataset.root}",
         f"python3 -m evalkit status {dataset.root}",
-        f"python3 -m evalkit run {dataset.root}",
-        f"python3 -m evalkit score {dataset.root}",
+        f"python3 -m evalkit preprod {dataset.root}",
+        f"python3 -m evalkit ship {dataset.root}",
+        f"python3 -m evalkit prod {dataset.root} --from ./prod-traces",
         "```",
         "",
     ]

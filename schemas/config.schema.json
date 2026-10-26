@@ -9,6 +9,14 @@
     "product": { "type": "string" },
     "job": { "type": "string", "description": "What the agent is supposed to get done." },
     "harm": { "type": "string", "description": "The worst thing it could do." },
+    "gold_unit": {
+      "type": "string",
+      "description": "What gold is: the last reply, the conversation, or the environment."
+    },
+    "company_goal": {
+      "type": "string",
+      "description": "A PRD number (conversion, CSAT) that must not become a gold-set gate."
+    },
     "acts": {
       "type": "boolean",
       "default": false,
