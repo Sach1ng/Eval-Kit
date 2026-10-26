@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Sach1ng/Eval-Kit/schemas/trace.schema.json",
+  "title": "Eval Kit trace",
+  "description": "One run of one agent on one world: what it said, what it called, and the state it left behind.",
+  "type": "object",
+  "required": ["world_id"],
+  "properties": {
+    "world_id": { "type": "string" },
+    "agent": { "type": "string", "description": "The system under test. Traces are grouped by agent." },
+    "trial": { "type": "integer", "minimum": 1, "description": "Which repeat of this world this run was." },
+    "final_output": { "type": "string" },
+    "tool_calls": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["name"],
+            "properties": { "name": { "type": "string" }, "args": { "type": "object" } }
+          }
+        ]
+      }
+    },
+    "final_state": {
+      "type": ["object", "null"],
+      "description": "The environment after the run. state_equals checks read this."
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" } } }
+        ]
+      }
+    },
+    "latency_ms": { "type": "number", "minimum": 0 },
+    "cost_usd": { "type": "number", "minimum": 0 },
+    "error": {
+      "type": ["string", "null"],
+      "description": "Set when the run crashed. An errored trial counts as a full failure."
+    }
+  }
+}

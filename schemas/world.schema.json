@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Sach1ng/Eval-Kit/schemas/world.schema.json",
+  "title": "Eval Kit world",
+  "description": "One test case for an agent: the task, the environment it works in, what is planted there, and the checks that grade a run.",
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "status": {
+      "enum": ["ready", "draft"],
+      "default": "ready",
+      "description": "Draft worlds are not run or scored."
+    },
+    "pathway": {
+      "type": "string",
+      "description": "The failure pathway this world tests. Must be declared in evalkit.json when pathways are declared."
+    },
+    "split": { "enum": ["dev", "holdout"], "default": "dev" },
+    "clean": {
+      "type": "boolean",
+      "default": false,
+      "description": "Nothing is planted. The right move is to change nothing and flag nothing."
+    },
+    "acts": {
+      "type": "boolean",
+      "description": "Overrides the dataset setting: whether the agent can change things (pay, post, send) in this world."
+    },
+    "title": { "type": "string" },
+    "task": { "type": "string", "description": "What the agent is asked to do." },
+    "environment": {
+      "type": "object",
+      "description": "The fixture your harness loads before the run: records, files, policies, tool backends."
+    },
+    "planted": { "type": "string", "description": "What is wrong in this world, for human readers." },
+    "brief": { "type": "string", "description": "Writing instructions for a draft world." },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "The value of each variation dimension this world covers."
+    },
+    "checks": { "type": "array", "items": { "$ref": "#/$defs/check" } },
+    "reference": {
+      "type": "object",
+      "description": "A known-good run with the same shape as a trace (world_id not required). It must pass every check."
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "source": { "type": "string" },
+        "author": { "type": "string" },
+        "reviewer": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": {
+          "enum": [
+            "contains_all",
+            "contains_any",
+            "not_contains",
+            "regex",
+            "state_equals",
+            "flags_equal",
+            "tool_called",
+            "tool_not_called"
+          ]
+        },
+        "layer": {
+          "enum": ["outcome", "path"],
+          "description": "Defaults to path for tool checks and outcome for everything else."
+        },
+        "description": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "enum": ["contains_all", "contains_any", "not_contains"] } } },
+          "then": {
+            "required": ["values"],
+            "properties": {
+              "values": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "flags_equal" } } },
+          "then": {
+            "required": ["values"],
+            "properties": { "values": { "type": "array", "items": { "type": "string", "minLength": 1 } } }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "regex" } } },
+          "then": {
+            "required": ["pattern"],
+            "properties": {
+              "pattern": { "type": "string", "minLength": 1 },
+              "min": { "type": "integer", "minimum": 0 },
+              "max": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "state_equals" } } },
+          "then": {
+            "required": ["path", "value"],
+            "properties": { "path": { "type": "string", "minLength": 1 } }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "enum": ["tool_called", "tool_not_called"] } } },
+          "then": {
+            "required": ["tool"],
+            "properties": {
+              "tool": { "type": "string", "minLength": 1 },
+              "args": { "type": "object" },
+              "min": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

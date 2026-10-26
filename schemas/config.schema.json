@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Sach1ng/Eval-Kit/schemas/config.schema.json",
+  "title": "Eval Kit dataset config (evalkit.json)",
+  "description": "What is being evaluated, how many trials each world gets, and the numbers that block a launch.",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "product": { "type": "string" },
+    "job": { "type": "string", "description": "What the agent is supposed to get done." },
+    "harm": { "type": "string", "description": "The worst thing it could do." },
+    "acts": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the agent can change things (pay, post, send). Worlds where it can need a path check."
+    },
+    "trials": { "type": "integer", "minimum": 1, "default": 1 },
+    "reliability": { "enum": ["every_time", "at_least_once", "both"] },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["metric"],
+        "properties": {
+          "metric": {
+            "enum": [
+              "clean_rate",
+              "outcome_rate",
+              "dirty_pass_rate",
+              "clean_pass_at_k",
+              "clean_pass_hat_k",
+              "outcome_pass_at_k",
+              "outcome_pass_hat_k",
+              "precision",
+              "completeness"
+            ]
+          },
+          "min": { "type": "number", "minimum": 0, "maximum": 1 },
+          "max": { "type": "number", "minimum": 0, "maximum": 1 }
+        },
+        "oneOf": [{ "required": ["min"] }, { "required": ["max"] }]
+      }
+    },
+    "pathways": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+    },
+    "agents": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "pattern": ":" },
+      "description": "Named agent adapters, as 'file.py:function' (relative to this folder) or 'module:function'."
+    }
+  }
+}
