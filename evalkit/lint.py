@@ -261,6 +261,11 @@ _TEST_CARDS = {
 }
 
 
+def personal_data_hits(value: Any) -> list[tuple[str, str]]:
+    """Locations in a fixture or trace that look like a real email, SSN, or card."""
+    return list(_personal_data(value))
+
+
 def _personal_data(value: Any) -> Iterator[tuple[str, str]]:
     for location, text in _strings(value, ""):
         for match in _EMAIL.finditer(text):

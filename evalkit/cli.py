@@ -24,6 +24,16 @@ from evalkit.init import default_dest, interview, write_dataset
 from evalkit.lint import format_findings, lint_dataset
 from evalkit.packs import PACK_ORDER
 from evalkit.process import render_process, write_process
+from evalkit.prod import evaluate_prod, load_prod_traces, write_prod
+from evalkit.propose import (
+    METRICS_FILE,
+    apply_confirmed_gates,
+    corpus,
+    load_plan,
+    propose_for,
+    render_plan,
+    write_plan,
+)
 from evalkit.report import (
     build_report,
     compare_reports,
@@ -34,7 +44,19 @@ from evalkit.report import (
 from evalkit.runner import load_agent, run_agent
 from evalkit.util import plural
 
-COMMANDS = {"init", "ingest", "lint", "status", "run", "score", "demo"}
+COMMANDS = {
+    "init",
+    "ingest",
+    "metrics",
+    "lint",
+    "status",
+    "run",
+    "score",
+    "preprod",
+    "ship",
+    "prod",
+    "demo",
+}
 
 
 def normalize_argv(argv: list[str]) -> list[str]:
@@ -63,7 +85,10 @@ def main(argv: list[str] | None = None) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="evalkit",
-        description="Build, lint, and score golden datasets for AI agents.",
+        description=(
+            "Build a golden set, confirm metrics, score pre-prod against gold, "
+            "and watch unlabeled production traces."
+        ),
     )
     parser.add_argument("--version", action="version", version=f"evalkit {__version__}")
     commands = parser.add_subparsers(title="commands", metavar="<command>")
@@ -101,6 +126,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="folder of transcripts or tickets (default: ./inbox)",
     )
     ingest_cmd.set_defaults(handler=cmd_ingest)
+
+    metrics = commands.add_parser(
+        "metrics",
+        help="propose metrics from the job, harm, and PRD; confirm before ship",
+        description="Print a metric plan. Company numbers (conversion, CSAT) stay "
+        "experiments. Confirming writes launch gates. --yes leaves the plan a proposal.",
+    )
+    metrics.add_argument("dataset", type=Path, help="dataset folder (contains evalkit.json)")
+    metrics.add_argument("--prd", type=Path, help="PRD or notes to read for stated numbers")
+    metrics.add_argument("--inbox", type=Path, help="folder of PRD/chat files")
+    metrics.add_argument(
+        "--confirm",
+        action="store_true",
+        help="write the proposal as the pre-prod gates",
+    )
+    metrics.add_argument("--yes", action="store_true", help="do not prompt; leave unconfirmed")
+    metrics.set_defaults(handler=cmd_metrics)
 
     lint = commands.add_parser(
         "lint",
@@ -150,6 +192,54 @@ def build_parser() -> argparse.ArgumentParser:
     score.add_argument("--baseline", type=Path, help="earlier report.json to compare against")
     score.add_argument("--no-gate", action="store_true", help="exit 0 even if a launch gate fails")
     score.set_defaults(handler=cmd_score)
+
+    preprod = commands.add_parser(
+        "preprod",
+        help="lint gold, run the adapter, score against the golden set",
+        description="The pre-prod loop: lint, run, score. Ship bars apply only after "
+        "you confirm metrics.",
+    )
+    preprod.add_argument("dataset", type=Path, help="dataset folder (contains evalkit.json)")
+    preprod.add_argument(
+        "--agent",
+        action="append",
+        metavar="NAME_OR_SPEC",
+        help="agent to run (repeatable; default: every agent in evalkit.json)",
+    )
+    preprod.add_argument("--trials", type=int, help="trials per world (default: evalkit.json)")
+    preprod.set_defaults(handler=cmd_preprod)
+
+    ship = commands.add_parser(
+        "ship",
+        help="enforce confirmed launch gates; prefer the holdout split",
+        description="Refuses to run until the metric plan is confirmed. Exits 1 if a "
+        "gate fails. Scores holdout when that split exists.",
+    )
+    ship.add_argument("dataset", type=Path, help="dataset folder (contains evalkit.json)")
+    ship.add_argument("--traces", type=Path, help="trace file or folder (default: DATASET/traces)")
+    ship.add_argument("--k", type=int, help="k for pass@k and pass^k")
+    ship.set_defaults(handler=cmd_ship)
+
+    prod = commands.add_parser(
+        "prod",
+        help="watch live traces: gold regression plus unlabeled policy checks",
+        description="Traces that name a ready world are scored against gold. The rest "
+        "get crash / empty / PII checks. --ingest writes queued misses as draft worlds.",
+    )
+    prod.add_argument("dataset", type=Path, help="dataset folder (contains evalkit.json)")
+    prod.add_argument(
+        "--from",
+        dest="source",
+        type=Path,
+        required=True,
+        help="folder or file of production traces",
+    )
+    prod.add_argument(
+        "--ingest",
+        action="store_true",
+        help="write unlabeled policy misses as draft worlds",
+    )
+    prod.set_defaults(handler=cmd_prod)
 
     demo = commands.add_parser(
         "demo",
@@ -274,6 +364,129 @@ def cmd_init(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_metrics(args: argparse.Namespace) -> int:
+    dataset = load_dataset(args.dataset)
+    extra: list[Path] = []
+    if args.prd:
+        extra.append(args.prd)
+    inbox = args.inbox if args.inbox is not None else Path("inbox")
+    if inbox.is_dir():
+        extra.append(inbox)
+    plan = propose_for(dataset, prd_text=corpus(dataset, extra))
+    existing = load_plan(dataset.root)
+    if existing and existing.get("confirmed") and not args.confirm:
+        print(render_plan(existing), end="")
+        print(f"Already confirmed -> {dataset.root / METRICS_FILE}")
+        return 0
+    print(render_plan(plan), end="")
+    confirmed = bool(args.confirm)
+    if not confirmed and not args.yes:
+        from evalkit.init import _ask
+
+        choice = _ask(
+            "Use this plan for pre-prod gates?",
+            options=["later", "confirm"],
+            default="later",
+            queued=[],
+            yes=False,
+        )
+        confirmed = choice == "confirm"
+    plan["confirmed"] = confirmed
+    write_plan(dataset.root, plan)
+    if confirmed:
+        apply_confirmed_gates(dataset.root, plan)
+        print(f"Confirmed. Gates written to {dataset.root / 'evalkit.json'}.")
+    else:
+        print(f"Proposal only. Confirm with: evalkit metrics {dataset.root} --confirm")
+    write_process(load_dataset(dataset.root))
+    return 0
+
+
+def cmd_preprod(args: argparse.Namespace) -> int:
+    print("Pre-prod: lint the gold, run the adapter, score against the gold.")
+    print()
+    lint_rc = cmd_lint(argparse.Namespace(dataset=args.dataset, strict=False))
+    if lint_rc != 0:
+        return lint_rc
+    print()
+    run_rc = cmd_run(
+        argparse.Namespace(
+            dataset=args.dataset,
+            agent=args.agent,
+            trials=args.trials,
+            label=None,
+            split=None,
+        )
+    )
+    if run_rc != 0:
+        return run_rc
+    print()
+    plan = load_plan(args.dataset)
+    no_gate = not (plan and plan.get("confirmed"))
+    if no_gate:
+        print("Metrics not confirmed; scoring without a ship bar.")
+        print()
+    return cmd_score(
+        argparse.Namespace(
+            dataset=args.dataset,
+            traces=None,
+            split=None,
+            k=None,
+            out=None,
+            baseline=None,
+            no_gate=no_gate,
+        )
+    )
+
+
+def cmd_ship(args: argparse.Namespace) -> int:
+    dataset = load_dataset(args.dataset)
+    plan = load_plan(dataset.root)
+    if plan is None or not plan.get("confirmed"):
+        raise DatasetError(
+            f"Confirm the metric plan before ship: evalkit metrics {dataset.root} --confirm"
+        )
+    if not dataset.gates:
+        raise DatasetError("No launch gates. Set a bar, then evalkit metrics DIR --confirm.")
+    split = None
+    if any(w.get("split") == "holdout" for w in dataset.ready_worlds()):
+        split = "holdout"
+        print("Scoring the holdout split.")
+    else:
+        print("No holdout yet; scoring every ready world. Do not treat this as a ship number.")
+    print()
+    return cmd_score(
+        argparse.Namespace(
+            dataset=args.dataset,
+            traces=args.traces,
+            split=split,
+            k=args.k,
+            out=None,
+            baseline=None,
+            no_gate=False,
+        )
+    )
+
+
+def cmd_prod(args: argparse.Namespace) -> int:
+    dataset = load_dataset(args.dataset)
+    traces = load_prod_traces(args.source)
+    payload = evaluate_prod(dataset, traces, ingest_misses=args.ingest)
+    paths = write_prod(dataset, payload)
+    report = payload["report"]
+    print(f"Production watch: {plural(report['traces'], 'trace')}")
+    print(f"  scored against gold: {report['labeled']}")
+    print(f"  unlabeled: {report['unlabeled']}")
+    print(f"  queued: {report['queue']}")
+    if report["drafts_written"]:
+        print(f"  drafts: {', '.join(report['drafts_written'])}")
+    shown = [p for p in paths if p.name in {"report.md", "report.json"}]
+    print(f"Wrote {', '.join(str(p) for p in shown)}")
+    gold = report.get("gold") or {}
+    gold_failed = bool(gold) and not gold.get("passed", True)
+    return 1 if report["queue"] or gold_failed else 0
+
+
 def cmd_ingest(args: argparse.Namespace) -> int:
     drafts = ingest(args.dataset, args.source)
     print(
@@ -301,7 +514,7 @@ def print_written(dest: Path) -> None:
     print(f"  {plural(len(ready), 'ready world')}: {', '.join(w['id'] for w in ready)}")
     if drafts:
         print(f"  {plural(len(drafts), 'draft')}: {', '.join(w['id'] for w in drafts)}")
-    print("  See PROCESS.md. Fill drafts, get a reviewer, then lint / run / score.")
+    print("  See PROCESS.md. Confirm metrics, then preprod / ship / prod.")
 
 
 if __name__ == "__main__":

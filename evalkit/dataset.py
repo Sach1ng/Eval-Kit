@@ -157,8 +157,11 @@ def load_dataset(root: str | Path) -> Dataset:
     return dataset
 
 
-def load_traces(path: str | Path) -> list[dict[str, Any]]:
-    """Load traces from one file or a directory tree. A file holds one trace or a list."""
+def load_traces(path: str | Path, *, need_world_id: bool = True) -> list[dict[str, Any]]:
+    """Load traces from one file or a directory tree. A file holds one trace or a list.
+
+    Production traces often have no world_id. Pass need_world_id=False for those.
+    """
     path = Path(path)
     if path.is_dir():
         files = sorted(path.rglob("*.json"))
@@ -171,7 +174,7 @@ def load_traces(path: str | Path) -> list[dict[str, Any]]:
         data = read_json(file)
         items = data if isinstance(data, list) else [data]
         for index, item in enumerate(items):
-            problems = validate_trace(item)
+            problems = validate_trace(item, need_world_id)
             if problems:
                 where = f"{file}[{index}]" if isinstance(data, list) else str(file)
                 raise DatasetError(f"{where}: {'; '.join(problems)}")
