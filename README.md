@@ -1,10 +1,15 @@
 # Eval Kit
 
-Write a golden dataset for an AI agent, check that the set is sound, then score traces against it.
+A launch-quality golden set is **weeks to months**: you interview the people who see the failures, rebuild the environment, write checks, and have someone else verify. This kit does not skip that. It is a place to put the work, and it helps you **create the first worlds** from two sources:
 
-A **world** is one test case: the task, the environment, what is planted there, and yes/no checks. Checks cover the **outcome** (did the environment end right?) and the **path** (did the agent get there without a forbidden action?). A right-looking answer on the wrong path is **dirty**, not a pass.
+1. **Interview** — job, harm, pathways, launch bar
+2. **Ingest** — transcripts, tickets, and traces that already happened become draft worlds
 
-No API key. The kit does not start your agent. You point it at a small Python function that does.
+A **world** is one test case: the task, the environment, what is planted, and yes/no checks. Checks cover the **outcome** (did the environment end right?) and the **path** (did the agent get there without a forbidden action?). A right-looking answer on the wrong path is **dirty**, not a pass.
+
+Drafts are not gold. A world is gold when it has checks, a known-good reference run, and a reviewer who did not plant it.
+
+No API key. The kit does not start your agent.
 
 **Created by [@Sach1ng](https://github.com/Sach1ng) and [@hardiktiwari](https://github.com/hardiktiwari)**
 
@@ -12,45 +17,55 @@ No API key. The kit does not start your agent. You point it at a small Python fu
 
 ## Prove it
 
-Python 3.9+. No install step required from a clone.
+Python 3.9+. No install step from a clone.
 
 ```bash
 git clone https://github.com/Sach1ng/Eval-Kit.git
 cd Eval-Kit
+python3 -m evalkit
+```
+
+That starts the interview (multiple choice + free text). Drop anonymized chats or tickets in `inbox/` first if you have them.
+
+Skip typing for a canned starter:
+
+```bash
 python3 -m evalkit demo
 ```
 
-That writes a starter golden set (`generated/demo`), lints it, runs a stand-in agent, and prints a scoreboard.
+---
 
-To start from a blank folder instead:
+## The loop this kit covers
+
+| Stage | Who | Command |
+|-------|-----|---------|
+| Frame the job | You, experts, customers | `evalkit init` (interview) |
+| Collect real misses | Tickets, chats, traces you already have | `evalkit ingest` |
+| Plant and write checks | You | edit `worlds/*.json` |
+| Prove the world is solvable | You | reference run; `evalkit lint` |
+| Second pair of eyes | Someone who did not plant it | `provenance.reviewer` |
+| Run the agent | Your adapter | `evalkit run` / `score` |
+| Grow | New production misses | `evalkit ingest` again |
+
+`evalkit status DIR` prints what is still on you. Init writes `PROCESS.md` so the remaining months of work are in the folder, not implied.
+
+Packs for the interview: `chatbot`, `marketplace`, `backoffice`, `coding`.
 
 ```bash
-python3 -m evalkit init my-eval --pack chatbot --yes
+python3 -m evalkit init my-eval --pack chatbot
+python3 -m evalkit ingest my-eval --from ./inbox
+python3 -m evalkit status my-eval
 python3 -m evalkit lint my-eval
 python3 -m evalkit run my-eval
 python3 -m evalkit score my-eval
 ```
 
-Packs: `chatbot`, `marketplace`, `backoffice`, `coding`.
+`--yes` on init accepts defaults (for scripts). It does not mean the eval is finished.
 
-`init` writes one **ready** world (task, environment, checks, a known-good reference run) and **draft** worlds for the other pathways. Fill the drafts. Point `agents.py` at your agent.
-
----
-
-## What you get
-
-| Command | What it does |
-|---------|----------------|
-| `evalkit init DIR` | Writes the golden set: `evalkit.json`, worlds, a stand-in agent |
-| `evalkit lint DIR` | Checks the set before you trust scores |
-| `evalkit run DIR` | Calls your adapter on every ready world, *k* trials each |
-| `evalkit score DIR` | Grades traces. Writes `results/report.md`. Exits 1 if a launch gate fails |
-
-Your adapter is one function. It receives only the task and the environment, never the checks or the reference.
+Your adapter is one function. It receives only the task and the environment, never the checks.
 
 ```python
 def run(world, *, trial, seed):
-    # call your agent here
     return {
         "final_output": "...",
         "tool_calls": [{"name": "ListRefunds", "args": {"order_id": "A-1001"}}],
@@ -78,18 +93,20 @@ def run(world, *, trial, seed):
 }
 ```
 
+Ingest writes the same shape with `"status": "draft"` and empty `checks`. Lint will not score drafts. Promote one only after you plant the failure, add checks, and attach a reference run that passes.
+
 Check types: `contains_all`, `contains_any`, `not_contains`, `regex`, `state_equals`, `flags_equal`, `tool_called`, `tool_not_called`. JSON Schemas are in `schemas/`.
 
 ---
 
 ## What lint refuses
 
-- A world with no outcome check, or no known-good **reference** run that passes
+- A ready world with no outcome check, or no known-good **reference** run that passes
 - An acting agent (pay, post, send) with no path check
 - Duplicate worlds under new ids, or real emails / card numbers in fixtures
 - Sentence-long text checks (match a key fact, not a paragraph)
 
-At 10+ ready worlds it also warns if too few are clean (nothing planted) and if there is no holdout split.
+At 10+ ready worlds it also warns if too few are clean (nothing planted) and if there is no holdout split. Anthropic's starting range is 20–50 worlds from real failures, not a generated grid.
 
 ---
 
@@ -102,15 +119,13 @@ Over *k* repeats of the same world:
 - **pass@k** — it succeeded at least once (Chen et al., 2021)
 - **pass^k** — it succeeded every time (Yao et al., τ-bench, 2024)
 
-`examples/support-refund` is a finished set: three worlds, eight trials, three stand-in agents. Traces and the report are in the repo.
+`examples/support-refund` is a small finished set, not a substitute for your interviews.
 
 | Agent | Clean | pass@8 | pass^8 |
 |-------|------:|-------:|-------:|
 | `policy` (follows the plants) | 100% | 100% | 100% |
 | `eager` (refunds first) | 0% | 0% | 0% |
 | `noisy` (coin flip each trial) | 50% | 100% | 0% |
-
-`noisy` can do the job. It does not do it every time. That gap is the point of pass^k.
 
 ```bash
 python3 -m evalkit score examples/support-refund
@@ -120,6 +135,6 @@ python3 -m evalkit score examples/support-refund
 
 ## Not in this version
 
-The kit does not call a live model. LLM-as-judge is not shipped (code checks first; a judge would need calibration against human labels). There is no production monitor yet: confirmed misses should become new worlds.
+The kit does not call a live model, run your interviews for you, or stand in for a domain expert. LLM-as-judge is not shipped. There is no production monitor: confirmed misses should be ingested as new drafts.
 
 Method notes: [docs/method.md](docs/method.md).

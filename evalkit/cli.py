@@ -19,9 +19,11 @@ from evalkit.dataset import (
     load_traces,
     read_json,
 )
-from evalkit.init import interview, write_dataset
+from evalkit.inbox import ingest, list_inbox
+from evalkit.init import default_dest, interview, write_dataset
 from evalkit.lint import format_findings, lint_dataset
 from evalkit.packs import PACK_ORDER
+from evalkit.process import render_process, write_process
 from evalkit.report import (
     build_report,
     compare_reports,
@@ -32,10 +34,22 @@ from evalkit.report import (
 from evalkit.runner import load_agent, run_agent
 from evalkit.util import plural
 
+COMMANDS = {"init", "ingest", "lint", "status", "run", "score", "demo"}
+
+
+def normalize_argv(argv: list[str]) -> list[str]:
+    """`evalkit` with no command starts the interview (init)."""
+    if not argv:
+        return ["init"]
+    if argv[0] in COMMANDS or argv[0] in {"-h", "--help", "--version"}:
+        return argv
+    return ["init", *argv]
+
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
     parser = build_parser()
-    args = parser.parse_args(argv)
+    args = parser.parse_args(normalize_argv(argv))
     if not hasattr(args, "handler"):
         parser.print_help()
         return 0
@@ -60,11 +74,33 @@ def build_parser() -> argparse.ArgumentParser:
         description="Write evalkit.json, one finished world, draft worlds for the other "
         "pathways, and a stand-in agent you replace with yours.",
     )
-    init.add_argument("dataset", type=Path, help="folder to write (created if missing)")
+    init.add_argument(
+        "dataset",
+        nargs="?",
+        type=Path,
+        help="folder to write (default: generated/<name>)",
+    )
     init.add_argument("--pack", choices=PACK_ORDER, help="starter pack (asked if omitted)")
     init.add_argument("--yes", action="store_true", help="accept defaults, do not prompt")
     init.add_argument("--force", action="store_true", help="overwrite an existing evalkit.json")
+    init.add_argument("--inbox", type=Path, help="folder of PRD/chat files (default: ./inbox)")
     init.set_defaults(handler=cmd_init)
+
+    ingest_cmd = commands.add_parser(
+        "ingest",
+        help="turn transcripts, tickets, or traces into draft worlds",
+        description="Each file becomes a draft world. Drafts are not gold until you add "
+        "checks and a known-good reference run.",
+    )
+    ingest_cmd.add_argument("dataset", type=Path, help="dataset folder (contains evalkit.json)")
+    ingest_cmd.add_argument(
+        "--from",
+        dest="source",
+        type=Path,
+        default=Path("inbox"),
+        help="folder of transcripts or tickets (default: ./inbox)",
+    )
+    ingest_cmd.set_defaults(handler=cmd_ingest)
 
     lint = commands.add_parser(
         "lint",
@@ -74,6 +110,14 @@ def build_parser() -> argparse.ArgumentParser:
     lint.add_argument("dataset", type=Path, help="dataset folder (contains evalkit.json)")
     lint.add_argument("--strict", action="store_true", help="exit 1 on warnings too")
     lint.set_defaults(handler=cmd_lint)
+
+    status = commands.add_parser(
+        "status",
+        help="show how much of the eval is still on you",
+        description="Ready vs draft worlds, and the remaining human work.",
+    )
+    status.add_argument("dataset", type=Path, help="dataset folder (contains evalkit.json)")
+    status.set_defaults(handler=cmd_status)
 
     run = commands.add_parser(
         "run",
@@ -212,10 +256,40 @@ def cmd_demo(args: argparse.Namespace) -> int:
 
 
 def cmd_init(args: argparse.Namespace) -> int:
-    answers = interview(yes=args.yes, pack_id=args.pack)
-    dest = write_dataset(args.dataset, answers["pack"], name=answers["name"], force=args.force)
+    answers = interview(yes=args.yes, pack_id=args.pack, inbox=args.inbox)
+    dest = args.dataset or default_dest(answers)
+    write_dataset(
+        dest,
+        answers["pack"],
+        name=answers["name"],
+        force=args.force,
+        answers=answers,
+    )
+    inbox = args.inbox or Path("inbox")
+    if answers.get("source") in {"transcripts", "both"} and list_inbox(inbox):
+        drafts = ingest(dest, inbox)
+        print(f"Ingested {plural(len(drafts), 'transcript')} as draft worlds.")
     print_written(dest)
-    print(f"Next: python3 -m evalkit lint {dest}")
+    print(f"Next: python3 -m evalkit status {dest}")
+    return 0
+
+
+def cmd_ingest(args: argparse.Namespace) -> int:
+    drafts = ingest(args.dataset, args.source)
+    print(
+        f"Wrote {plural(len(drafts), 'draft world')} from {args.source}. "
+        "Not gold until each has checks and a reference run."
+    )
+    for world in drafts:
+        print(f"  {world['id']}  pathway={world['pathway']}")
+    print(f"Next: python3 -m evalkit status {args.dataset}")
+    return 0
+
+
+def cmd_status(args: argparse.Namespace) -> int:
+    dataset = load_dataset(args.dataset)
+    write_process(dataset)
+    print(render_process(dataset))
     return 0
 
 
@@ -223,11 +297,11 @@ def print_written(dest: Path) -> None:
     dataset = load_dataset(dest)
     ready = dataset.ready_worlds()
     drafts = [w for w in dataset.worlds if w.get("status") == "draft"]
-    print(f"Wrote golden set -> {dest.resolve()}")
+    print(f"Wrote starter set -> {dest.resolve()}  (not a finished eval)")
     print(f"  {plural(len(ready), 'ready world')}: {', '.join(w['id'] for w in ready)}")
     if drafts:
         print(f"  {plural(len(drafts), 'draft')}: {', '.join(w['id'] for w in drafts)}")
-    print("  Fill the drafts. Point agents.py at your agent. Then lint / run / score.")
+    print("  See PROCESS.md. Fill drafts, get a reviewer, then lint / run / score.")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ How Eval Kit maps to current eval practice, and the calls we made.
 
 Husain and Shankar: start with error analysis on real traces, then write tests for those failures. Anthropic: 20–50 tasks from real misses is enough to start; a 0% pass@k is usually a broken task.
 
-`evalkit init` writes pathways (failure types) and one finished world per pack, plus drafts for the rest. It does not invent a 300-row set. Grow the set by filling drafts and adding worlds from production misses.
+`evalkit init` interviews you for the job, the harm, and the pathways. `evalkit ingest` turns transcripts and tickets you already have into draft worlds. Neither command invents a 300-row set. A world is gold only after a person writes checks, a reference run passes, and someone who did not plant it reviews it. Grow the set from new production misses. `evalkit status` lists what is still on you — that remaining work is the months, not a missing feature.
 
 ## Grade the end state, then the path
 
