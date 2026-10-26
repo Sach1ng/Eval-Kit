@@ -30,7 +30,7 @@ from evalkit.report import (
     write_report,
 )
 from evalkit.runner import load_agent, run_agent
-from evalkit.util import example_dir, example_names, plural
+from evalkit.util import plural
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -53,6 +53,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--version", action="version", version=f"evalkit {__version__}")
     commands = parser.add_subparsers(title="commands", metavar="<command>")
+
+    init = commands.add_parser(
+        "init",
+        help="write a golden dataset: worlds, pathways, and a stand-in agent",
+        description="Write evalkit.json, one finished world, draft worlds for the other "
+        "pathways, and a stand-in agent you replace with yours.",
+    )
+    init.add_argument("dataset", type=Path, help="folder to write (created if missing)")
+    init.add_argument("--pack", choices=PACK_ORDER, help="starter pack (asked if omitted)")
+    init.add_argument("--yes", action="store_true", help="accept defaults, do not prompt")
+    init.add_argument("--force", action="store_true", help="overwrite an existing evalkit.json")
+    init.set_defaults(handler=cmd_init)
 
     lint = commands.add_parser(
         "lint",
@@ -97,27 +109,23 @@ def build_parser() -> argparse.ArgumentParser:
 
     demo = commands.add_parser(
         "demo",
-        help="lint, run, and score a committed example (no API key)",
-        description="Runs lint, then the stand-in agents, then score on a committed example.",
+        help="write a starter golden set, then lint, run, and score it (no API key)",
+        description="Creates a dataset from a pack, lints it, runs the stand-in agent, "
+        "and prints a scoreboard.",
     )
     demo.add_argument(
-        "--example",
-        default="support-refund",
-        help="example name (default: support-refund)",
+        "--pack",
+        choices=PACK_ORDER,
+        default="chatbot",
+        help="which starter pack to write (default: chatbot)",
+    )
+    demo.add_argument(
+        "--out",
+        type=Path,
+        default=Path("generated/demo"),
+        help="folder to write (default: generated/demo)",
     )
     demo.set_defaults(handler=cmd_demo)
-
-    init = commands.add_parser(
-        "init",
-        help="write a dataset folder you can lint, run, and score",
-        description="Write evalkit.json, one finished world, draft worlds for the other "
-        "pathways, and a stand-in agent.",
-    )
-    init.add_argument("dataset", type=Path, help="folder to write (created if missing)")
-    init.add_argument("--pack", choices=PACK_ORDER, help="starter pack (asked if omitted)")
-    init.add_argument("--yes", action="store_true", help="accept defaults, do not prompt")
-    init.add_argument("--force", action="store_true", help="overwrite an existing evalkit.json")
-    init.set_defaults(handler=cmd_init)
     return parser
 
 
@@ -177,25 +185,22 @@ def cmd_score(args: argparse.Namespace) -> int:
 
 
 def cmd_demo(args: argparse.Namespace) -> int:
-    root = example_dir(args.example)
-    if root is None:
-        available = ", ".join(example_names()) or "(none in this checkout)"
-        raise DatasetError(f"no example {args.example!r}. Available: {available}")
-    print(f"Demo: {root}")
+    dest = write_dataset(args.out, args.pack, force=True)
+    print_written(dest)
     print()
-    lint_rc = cmd_lint(argparse.Namespace(dataset=root, strict=False))
+    lint_rc = cmd_lint(argparse.Namespace(dataset=dest, strict=False))
     if lint_rc != 0:
         return lint_rc
     print()
     run_rc = cmd_run(
-        argparse.Namespace(dataset=root, agent=None, trials=None, label=None, split=None)
+        argparse.Namespace(dataset=dest, agent=None, trials=None, label=None, split=None)
     )
     if run_rc != 0:
         return run_rc
     print()
     return cmd_score(
         argparse.Namespace(
-            dataset=root,
+            dataset=dest,
             traces=None,
             split=None,
             k=None,
@@ -209,9 +214,20 @@ def cmd_demo(args: argparse.Namespace) -> int:
 def cmd_init(args: argparse.Namespace) -> int:
     answers = interview(yes=args.yes, pack_id=args.pack)
     dest = write_dataset(args.dataset, answers["pack"], name=answers["name"], force=args.force)
-    print(f"Wrote dataset -> {dest.resolve()}")
+    print_written(dest)
     print(f"Next: python3 -m evalkit lint {dest}")
     return 0
+
+
+def print_written(dest: Path) -> None:
+    dataset = load_dataset(dest)
+    ready = dataset.ready_worlds()
+    drafts = [w for w in dataset.worlds if w.get("status") == "draft"]
+    print(f"Wrote golden set -> {dest.resolve()}")
+    print(f"  {plural(len(ready), 'ready world')}: {', '.join(w['id'] for w in ready)}")
+    if drafts:
+        print(f"  {plural(len(drafts), 'draft')}: {', '.join(w['id'] for w in drafts)}")
+    print("  Fill the drafts. Point agents.py at your agent. Then lint / run / score.")
 
 
 if __name__ == "__main__":
