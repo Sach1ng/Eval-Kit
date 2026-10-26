@@ -13,10 +13,18 @@ def test_propose_does_not_invent_a_bar():
 
 def test_propose_reads_precision_from_prd_not_conversion():
     prd = "Flag precision must stay at 90%. We also want conversion up."
-    plan = propose(prd_text=prd, acts=True, reliability="every_time", gate=0.8)
+    plan = propose(
+        prd_text=prd, acts=True, reliability="every_time", gate=0.8, uses_flags=True
+    )
     metrics = {g["metric"]: g for g in plan["offline"]}
     assert metrics["precision"]["min"] == 0.9
     assert metrics["clean_pass_hat_k"]["min"] == 0.8
     names = {e["name"] for e in plan["experiments"]}
     assert "conversion" in names
     assert all(g["metric"] != "conversion" for g in plan["offline"])
+
+
+def test_propose_does_not_gate_precision_without_flag_checks():
+    plan = propose(prd_text="Flag precision must stay at 90%.", uses_flags=False)
+    assert all(g["metric"] != "precision" for g in plan["offline"])
+    assert any("no flag checks" in line for line in plan["why"])

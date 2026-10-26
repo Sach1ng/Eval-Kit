@@ -14,6 +14,26 @@ def test_init_writes_an_unconfirmed_plan(tmp_path):
     assert main(["status", str(dest)]) == 0
 
 
+def test_chatbot_does_not_gate_prd_precision(tmp_path):
+    dest = tmp_path / "eval"
+    assert main(["init", str(dest), "--pack", "chatbot", "--yes"]) == 0
+    prd = tmp_path / "prd.md"
+    prd.write_text("Flag precision 90%. We also want conversion up.\n", encoding="utf-8")
+    assert main(["metrics", str(dest), "--prd", str(prd), "--confirm"]) == 0
+    config = json.loads((dest / "evalkit.json").read_text())
+    assert config["gates"] == []
+    assert main(["preprod", str(dest)]) == 0
+
+
+def test_init_without_a_terminal_tells_you_to_pass_yes(tmp_path, monkeypatch, capsys):
+    def boom(_prompt=""):
+        raise EOFError
+
+    monkeypatch.setattr("builtins.input", boom)
+    assert main(["init", str(tmp_path / "eval"), "--pack", "chatbot"]) == 2
+    assert "--yes" in capsys.readouterr().err
+
+
 def test_metrics_confirm_writes_prd_gates(tmp_path):
     dest = tmp_path / "eval"
     assert main(["init", str(dest), "--pack", "backoffice", "--yes"]) == 0

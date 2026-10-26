@@ -49,6 +49,7 @@ def propose(
     gate: float | None = None,
     prd_text: str = "",
     company_goal: str = "",
+    uses_flags: bool = False,
 ) -> dict[str, Any]:
     verifiers = [
         {
@@ -92,12 +93,24 @@ def propose(
 
     precision = _pct_for(prd_text, r"(?:flag\s+)?precision")
     if precision is not None:
-        offline.append({"metric": "precision", "min": precision, "source": "prd"})
-        why.append(f"PRD stated precision; proposed precision >= {precision:.0%}.")
+        if uses_flags:
+            offline.append({"metric": "precision", "min": precision, "source": "prd"})
+            why.append(f"PRD stated precision; proposed precision >= {precision:.0%}.")
+        else:
+            why.append(
+                f"PRD stated precision {precision:.0%}, but this gold set has no flag "
+                "checks, so it is not a gate."
+            )
     completeness = _pct_for(prd_text, r"completeness")
     if completeness is not None:
-        offline.append({"metric": "completeness", "min": completeness, "source": "prd"})
-        why.append(f"PRD stated completeness; proposed completeness >= {completeness:.0%}.")
+        if uses_flags:
+            offline.append({"metric": "completeness", "min": completeness, "source": "prd"})
+            why.append(f"PRD stated completeness; proposed completeness >= {completeness:.0%}.")
+        else:
+            why.append(
+                f"PRD stated completeness {completeness:.0%}, but this gold set has no flag "
+                "checks, so it is not a gate."
+            )
 
     experiments: list[dict[str, str]] = []
     goal = (company_goal or "").strip()
@@ -260,6 +273,11 @@ def propose_for(
     cfg = dataset.config
     if gate is None:
         gate = gate_from_config(cfg)
+    uses_flags = any(
+        isinstance(check, dict) and check.get("type") == "flags_equal"
+        for world in dataset.worlds
+        for check in (world.get("checks") or [])
+    )
     plan = propose(
         job=str(cfg.get("job") or ""),
         harm=str(cfg.get("harm") or ""),
@@ -270,6 +288,7 @@ def propose_for(
         gate=gate,
         prd_text=prd_text,
         company_goal=company_goal or str(cfg.get("company_goal") or ""),
+        uses_flags=uses_flags,
     )
     if not plan["offline"] and dataset.gates:
         plan["offline"] = [{**g, "source": "evalkit.json"} for g in dataset.gates]

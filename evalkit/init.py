@@ -301,6 +301,10 @@ def interview(
         else ""
         for c in clues
     )
+    uses_flags = any(
+        isinstance(check, dict) and check.get("type") == "flags_equal"
+        for check in (pack.get("ready") or {}).get("checks") or []
+    )
     plan = propose(
         job=job,
         harm=harm,
@@ -311,6 +315,7 @@ def interview(
         gate=gate,
         prd_text=prd_text,
         company_goal=company_goal,
+        uses_flags=uses_flags,
     )
     print()
     print(render_plan(plan), end="")
@@ -399,7 +404,12 @@ def _ask(
         raw = default or (options[0] if options else "")
         print(f"  -> {raw}")
     else:
-        raw = input("  -> ").strip()
+        try:
+            raw = input("  -> ").strip()
+        except EOFError as exc:
+            raise DatasetError(
+                "This command asks questions. Run it in a terminal, or pass --yes."
+            ) from exc
     if not raw:
         raw = default or (options[0] if options else "")
         if default:

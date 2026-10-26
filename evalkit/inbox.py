@@ -16,6 +16,8 @@ from evalkit.process import write_process
 from evalkit.util import slugify, write_json
 
 INBOX = Path("inbox")
+# Notes and PRDs belong in metrics, not as fake worlds.
+_NOT_CASES = {"prd", "spec", "brief"}
 
 # Words in a dropped PRD or chat → pathway ids in the starter packs.
 _HINTS = (
@@ -133,9 +135,12 @@ def draft_world(path: Path, text: str, *, used_ids: set[str], pathway_ids: list[
 def ingest(dataset_dir: Path, source: Path, *, limit: int = 40) -> list[dict]:
     """Write one draft world per file. Existing world ids are left alone."""
     dataset = load_dataset(dataset_dir)
-    files = list_inbox(source)
-    if not files:
+    incoming = list_inbox(source)
+    files = [path for path in incoming if path.stem.lower() not in _NOT_CASES]
+    if not incoming:
         raise DatasetError(f"{source}: no transcripts or tickets to ingest")
+    if not files:
+        return []
     used = {w["id"] for w in dataset.worlds if isinstance(w.get("id"), str)}
     declared = list(dataset.pathway_ids)
     written = []

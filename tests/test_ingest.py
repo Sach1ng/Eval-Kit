@@ -65,6 +65,22 @@ def test_status_lists_remaining_work(tmp_path, capsys):
     assert "reviewer" in out.lower()
 
 
+def test_ingest_skips_prd_files(tmp_path):
+    dest = tmp_path / "eval"
+    inbox = tmp_path / "inbox"
+    inbox.mkdir()
+    (inbox / "prd.md").write_text("Flag precision must stay at 90%.\n", encoding="utf-8")
+    (inbox / "ticket.txt").write_text(
+        "Customer: I already got a refund yesterday. The bot issued another $42 today.",
+        encoding="utf-8",
+    )
+    assert main(["init", str(dest), "--pack", "chatbot", "--yes"]) == 0
+    assert main(["ingest", str(dest), "--from", str(inbox)]) == 0
+    ids = [w["id"] for w in load_dataset(dest).worlds]
+    assert any(i.startswith("from_ticket") for i in ids)
+    assert not any(i.startswith("from_prd") for i in ids)
+
+
 def test_init_with_inbox_ingests_when_source_is_both(tmp_path):
     dest = tmp_path / "eval"
     inbox = tmp_path / "inbox"

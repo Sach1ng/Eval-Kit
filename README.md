@@ -27,7 +27,7 @@ cd Eval-Kit
 python3 -m evalkit
 ```
 
-That starts the interview (multiple choice + free text). Drop anonymized chats or tickets in `inbox/` first if you have them.
+Run that from the clone folder. It starts the interview (multiple choice + free text). Drop anonymized chats or tickets in `inbox/` first if you have them. Scripts should pass `--yes` so they do not wait on a prompt.
 
 Skip typing for a canned starter:
 
@@ -65,6 +65,8 @@ python3 -m evalkit preprod my-eval
 python3 -m evalkit ship my-eval
 python3 -m evalkit prod my-eval --from ./prod-traces
 ```
+
+`ship` needs a confirmed launch bar (set one in the interview, or a number the gold set can actually score). Precision gates only apply when worlds have flag checks.
 
 Your adapter is one function. It receives only the task and the environment, never the checks.
 

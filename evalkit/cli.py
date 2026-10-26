@@ -358,7 +358,8 @@ def cmd_init(args: argparse.Namespace) -> int:
     inbox = args.inbox or Path("inbox")
     if answers.get("source") in {"transcripts", "both"} and list_inbox(inbox):
         drafts = ingest(dest, inbox)
-        print(f"Ingested {plural(len(drafts), 'transcript')} as draft worlds.")
+        if drafts:
+            print(f"Ingested {plural(len(drafts), 'transcript')} as draft worlds.")
     print_written(dest)
     print(f"Next: python3 -m evalkit status {dest}")
     return 0
