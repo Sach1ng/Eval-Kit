@@ -1,15 +1,17 @@
 # Eval Kit
 
-A launch-quality golden set is **weeks to months**: you interview the people who see the failures, rebuild the environment, write checks, and have someone else verify. This kit does not skip that. It is a place to put the work, and it helps you **create the first worlds** from two sources:
+A launch-quality eval is **weeks to months**. This kit is the place to put that work, and it helps you **create the golden set**, **propose metrics you confirm**, **score pre-prod against that gold**, and **watch unlabeled production traces**.
 
-1. **Interview** — job, harm, pathways, launch bar
-2. **Ingest** — transcripts, tickets, and traces that already happened become draft worlds
+Worlds come from two sources:
+
+1. **Interview** — job, harm, pathways, launch bar (`evalkit init`)
+2. **Ingest** — past transcripts, tickets, and issues (`evalkit ingest`)
 
 A **world** is one test case: the task, the environment, what is planted, and yes/no checks. Checks cover the **outcome** (did the environment end right?) and the **path** (did the agent get there without a forbidden action?). A right-looking answer on the wrong path is **dirty**, not a pass.
 
 Drafts are not gold. A world is gold when it has checks, a known-good reference run, and a reviewer who did not plant it.
 
-No API key. The kit does not start your agent.
+No API key. The kit does not start your agent. There is no LLM judge: verifiers are code checks against gold, plus crash / empty / PII checks on unlabeled live traces.
 
 **Created by [@Sach1ng](https://github.com/Sach1ng) and [@hardiktiwari](https://github.com/hardiktiwari)**
 
@@ -35,32 +37,34 @@ python3 -m evalkit demo
 
 ---
 
-## The loop this kit covers
+## The loop
 
 | Stage | Who | Command |
 |-------|-----|---------|
-| Frame the job | You, experts, customers | `evalkit init` (interview) |
-| Collect real misses | Tickets, chats, traces you already have | `evalkit ingest` |
+| Frame the job | You, experts, customers, PRD | `evalkit init` |
+| Collect real misses | Transcripts, tickets, issues you already have | `evalkit ingest` |
 | Plant and write checks | You | edit `worlds/*.json` |
 | Prove the world is solvable | You | reference run; `evalkit lint` |
-| Second pair of eyes | Someone who did not plant it | `provenance.reviewer` |
-| Run the agent | Your adapter | `evalkit run` / `score` |
-| Grow | New production misses | `evalkit ingest` again |
+| Propose metrics | Job, harm, PRD — then you confirm | `evalkit metrics` |
+| Pre-prod against gold | Your adapter + code checks | `evalkit preprod` |
+| Ship bar | Confirmed gates, prefer holdout | `evalkit ship` |
+| Post-prod | Unlabeled live traces | `evalkit prod` |
+| Grow gold | Confirmed live misses | `evalkit ingest` / `prod --ingest` |
 
 `evalkit status DIR` prints what is still on you. Init writes `PROCESS.md` so the remaining months of work are in the folder, not implied.
 
-Packs for the interview: `chatbot`, `marketplace`, `backoffice`, `coding`.
+Company numbers in a PRD (conversion, CSAT) stay **experiments**. They are not gold-set gates. `--yes` accepts interview defaults for scripts. It does not mean the eval is finished, and it does not confirm metrics.
+
+Packs: `chatbot`, `marketplace`, `backoffice`, `coding`.
 
 ```bash
 python3 -m evalkit init my-eval --pack chatbot
 python3 -m evalkit ingest my-eval --from ./inbox
-python3 -m evalkit status my-eval
-python3 -m evalkit lint my-eval
-python3 -m evalkit run my-eval
-python3 -m evalkit score my-eval
+python3 -m evalkit metrics my-eval --prd ./inbox/prd.md --confirm
+python3 -m evalkit preprod my-eval
+python3 -m evalkit ship my-eval
+python3 -m evalkit prod my-eval --from ./prod-traces
 ```
-
-`--yes` on init accepts defaults (for scripts). It does not mean the eval is finished.
 
 Your adapter is one function. It receives only the task and the environment, never the checks.
 
@@ -112,12 +116,16 @@ At 10+ ready worlds it also warns if too few are clean (nothing planted) and if 
 
 ## Metrics
 
+`evalkit metrics` proposes from the job, the harm, and numbers actually written in a PRD. You confirm before they become launch gates.
+
 Each trial lands in one cell: **clean**, **dirty**, **outcome_fail**, **full_fail**.
 
 Over *k* repeats of the same world:
 
 - **pass@k** — it succeeded at least once (Chen et al., 2021)
 - **pass^k** — it succeeded every time (Yao et al., τ-bench, 2024)
+
+`evalkit preprod` lints, runs your adapter, and scores against gold. `evalkit ship` refuses until the plan is confirmed, then enforces the gates (holdout when that split exists). `evalkit prod` scores live traces that still name a world, and queues unlabeled ones that crash, come back empty, or look like personal data. `--ingest` turns those misses into drafts.
 
 `examples/support-refund` is a small finished set, not a substitute for your interviews.
 
@@ -135,6 +143,6 @@ python3 -m evalkit score examples/support-refund
 
 ## Not in this version
 
-The kit does not call a live model, run your interviews for you, or stand in for a domain expert. LLM-as-judge is not shipped. There is no production monitor: confirmed misses should be ingested as new drafts.
+The kit does not call a live model, run your interviews for you, or stand in for a domain expert. LLM-as-judge is not shipped: use code checks, then add a judge only after you have Pass and Fail labels and have calibrated it.
 
 Method notes: [docs/method.md](docs/method.md).

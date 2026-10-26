@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "evalkit"
 dynamic = ["version"]
-description = "Build, lint, and score golden datasets for AI agents: outcome vs path, pass@k vs pass^k."
+description = "Build a golden set, confirm metrics, score pre-prod against gold, and watch production traces."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

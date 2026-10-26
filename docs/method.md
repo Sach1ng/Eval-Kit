@@ -6,7 +6,11 @@ How Eval Kit maps to current eval practice, and the calls we made.
 
 Husain and Shankar: start with error analysis on real traces, then write tests for those failures. Anthropic: 20–50 tasks from real misses is enough to start; a 0% pass@k is usually a broken task.
 
-`evalkit init` interviews you for the job, the harm, and the pathways. `evalkit ingest` turns transcripts and tickets you already have into draft worlds. Neither command invents a 300-row set. A world is gold only after a person writes checks, a reference run passes, and someone who did not plant it reviews it. Grow the set from new production misses. `evalkit status` lists what is still on you — that remaining work is the months, not a missing feature.
+`evalkit init` interviews you for the job, the harm, and the pathways. `evalkit ingest` turns transcripts and tickets you already have into draft worlds. Neither command invents a 300-row set. A world is gold only after a person writes checks, a reference run passes, and someone who did not plant it reviews it.
+
+`evalkit metrics` proposes offline gates from those answers and from numbers actually written in a PRD. Conversion, CSAT, and other company goals stay experiments; they are not gold-set gates. Confirming the plan is a person, not `--yes`. `evalkit preprod` scores against gold. `evalkit ship` enforces confirmed gates. `evalkit prod` watches unlabeled live traces (crash, empty, personal data) and can ingest confirmed misses as drafts.
+
+`evalkit status` lists what is still on you — that remaining work is the months, not a missing feature.
 
 ## Grade the end state, then the path
 
@@ -16,7 +20,7 @@ Outcome checks read `final_output`, `final_state`, and `flags`. Path checks are 
 
 ## Code checks before judges
 
-Husain and Shankar: if a rule can decide, use code. LLM judges need Pass and Fail labels and calibration (TPR/TNR). Eval Kit ships eight code check types. There is no judge in v0.2.
+Husain and Shankar: if a rule can decide, use code. LLM judges need Pass and Fail labels and calibration (TPR/TNR). Eval Kit ships eight code check types. There is no judge in v0.2. Production traces without a world_id are not graded as gold; they get policy checks, then a person decides whether a miss becomes a draft world.
 
 ## A known-good run on every world
 
