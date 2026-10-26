@@ -20,12 +20,17 @@ The worked example is the public [APEX-Accounting](https://huggingface.co/datase
 
 2. **Run the demo** (no API key, Python 3.9+)
    ```bash
-   python3 -m evalkit --demo
+   python3 -m evalkit demo
    ```
 
 3. **Or answer the questions yourself**
    ```bash
-   python3 -m evalkit
+   python3 -m evalkit init
+   ```
+
+4. **Score your own traces** against a dataset folder
+   ```bash
+   python3 -m evalkit score path/to/dataset
    ```
 
 ---
