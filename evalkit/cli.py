@@ -28,6 +28,8 @@ from evalkit.report import (
     score_dataset,
     write_report,
 )
+from evalkit.runner import load_agent, run_agent
+from evalkit.util import plural
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -60,6 +62,24 @@ def build_parser() -> argparse.ArgumentParser:
     lint.add_argument("--strict", action="store_true", help="exit 1 on warnings too")
     lint.set_defaults(handler=cmd_lint)
 
+    run = commands.add_parser(
+        "run",
+        help="run an agent adapter on every ready world, k trials each",
+        description="Run each agent on every ready world and write traces/<agent>/*.json.",
+    )
+    run.add_argument("dataset", type=Path, help="dataset folder (contains evalkit.json)")
+    run.add_argument(
+        "--agent",
+        action="append",
+        metavar="NAME_OR_SPEC",
+        help="a name from evalkit.json 'agents', or file.py:function or module:function "
+        "(repeatable; default: every agent in evalkit.json)",
+    )
+    run.add_argument("--trials", type=int, help="trials per world (default: evalkit.json)")
+    run.add_argument("--label", help="trace folder name for a single --agent spec")
+    run.add_argument("--split", choices=SPLITS, help="run only this split")
+    run.set_defaults(handler=cmd_run)
+
     score = commands.add_parser(
         "score",
         help="grade traces against worlds, check launch gates, write a report",
@@ -90,6 +110,33 @@ def cmd_lint(args: argparse.Namespace) -> int:
     print(format_findings(dataset, findings))
     failing = ("error", "warning") if args.strict else ("error",)
     return 1 if any(f.severity in failing for f in findings) else 0
+
+
+def cmd_run(args: argparse.Namespace) -> int:
+    dataset = load_dataset(args.dataset)
+    dataset.require_valid()
+    requested = args.agent or list(dataset.agents)
+    if not requested:
+        raise DatasetError(
+            "no agent to run: pass --agent file.py:function, or list agents in evalkit.json"
+        )
+    if args.label and len(requested) != 1:
+        raise DatasetError("--label works with exactly one --agent")
+    trials = args.trials if args.trials is not None else dataset.trials
+    for item in requested:
+        if item in dataset.agents:
+            label, spec = item, dataset.agents[item]
+        else:
+            label, spec = args.label or item.rpartition(":")[2], item
+        run = run_agent(
+            dataset, load_agent(spec, dataset.root), label=label, trials=trials, split=args.split
+        )
+        worlds = plural(len(run.traces) // trials, "world")
+        errored = f", {run.errors} errored" if run.errors else ""
+        where = dataset.relative(run.out_dir)
+        print(f"{label}: {plural(len(run.traces), 'trial')} over {worlds}{errored} -> {where}")
+    print(f"Next: evalkit score {dataset.root}")
+    return 0
 
 
 def cmd_score(args: argparse.Namespace) -> int:

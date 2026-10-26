@@ -9,7 +9,7 @@ from typing import Any
 from evalkit.dataset import Dataset, DatasetError
 from evalkit.metrics import summarize
 from evalkit.scoring import CELLS, TrialResult, score_trial
-from evalkit.util import write_json
+from evalkit.util import plural, write_json
 
 FAILURES_SHOWN = 25
 COMPARED = (
@@ -236,7 +236,7 @@ def render_markdown(report: dict[str, Any]) -> str:
     show_k = any(s["k"] > 1 for s in agents.values())
     lines = [f"# Eval report: {report['dataset']}", ""]
     scope = "all splits" if report["split"] == "all" else f"the {report['split']} split"
-    lines.append(f"{_plural(report['worlds'], 'ready world')}, {scope}.")
+    lines.append(f"{plural(report['worlds'], 'ready world')}, {scope}.")
     if show_k:
         lines.append(
             f"pass@k and pass^k use k = {k} trials per world."
@@ -409,7 +409,7 @@ def render_summary(report: dict[str, Any]) -> str:
         row.append(_gate_cell(s))
         rows.append(row)
     widths = [max(len(r[i]) for r in rows) for i in range(len(header) - 1)]
-    title = f"{report['dataset']}: {_plural(report['worlds'], 'world')}"
+    title = f"{report['dataset']}: {plural(report['worlds'], 'world')}"
     lines = [title + (f", k = {k}" if show_k and k else "")]
     for row in rows:
         cells = [row[0].ljust(widths[0])] + [c.rjust(w) for c, w in zip(row[1:-1], widths[1:])]
@@ -421,10 +421,6 @@ def render_summary(report: dict[str, Any]) -> str:
 
 def _row(cells: list[str]) -> str:
     return "| " + " | ".join(cells) + " |"
-
-
-def _plural(count: int, word: str) -> str:
-    return f"{count} {word}" + ("" if count == 1 else "s")
 
 
 def _ms(value: float | None) -> str:
