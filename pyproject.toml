@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "evalkit"
+dynamic = ["version"]
+description = "Build, lint, and score golden datasets for AI agents: outcome vs path, pass@k vs pass^k."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "Sachin Gupta" },
+  { name = "Hardik Tiwari" },
+]
+requires-python = ">=3.9"
+dependencies = []
+keywords = ["evals", "llm", "ai-agents", "golden-dataset", "pass-at-k"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Testing",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff==0.17.2", "jsonschema>=4.18"]
+
+[project.scripts]
+evalkit = "evalkit.cli:main"
+
+[project.urls]
+Repository = "https://github.com/Sach1ng/Eval-Kit"
+
+[tool.setuptools]
+packages = ["evalkit"]
+
+[tool.setuptools.dynamic]
+version = { attr = "evalkit.__version__" }
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
